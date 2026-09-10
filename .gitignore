@@ -60,3 +60,12 @@ pnpm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+# shrimp task manager
+shrimp_data/
+
+# mcp
+.mcp.json
+
+# claude code local settings
+.claude/settings.local.json
