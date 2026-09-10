@@ -83,3 +83,17 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 ## MCP 서버 (`.mcp.json`)
 
 `playwright`, `context7`(HTTP), `sequential-thinking`, `shadcn`, `shrimp-task-manager`(DATA_DIR=`shrimp_data/`). Serena는 플러그인으로 제공.
+
+## 하네스: roadmap
+
+**목표:** `docs/PRD.md` → `docs/ROADMAP.md` 생성·확장(planner)과 구현 후 완료 검증·상태 갱신(updater)을 분리 조율.
+
+**트리거:** 로드맵 생성/Task 추가/명세 요청, 또는 "작업 끝났어 로드맵 갱신 / Task 완료 처리" 요청 시 `roadmap-orchestrator` 스킬 사용. 로드맵 내용 단순 조회는 직접 응답.
+
+**정책:** 두 에이전트 모두 앱 구현 코드·`package.json`·의존성·`prisma migrate`를 건드리지 않는다. 쓰기는 `docs/ROADMAP.md` / `docs/specs/*.html` / (요청 시) 테스트 골격만. updater는 수락 기준을 코드베이스에서 실제 검증(Serena + 테스트/빌드 실행)한 항목만 `✅` 처리.
+
+**변경 이력:**
+
+| 날짜       | 변경 내용                                                                                                     | 대상                                                  | 사유                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------ |
+| 2026-09-10 | 초기 구성 — `development-planner` 삭제 후 planner/updater로 분리 리팩터, `roadmap` 스킬 + 오케스트레이터 추가 | `.claude/agents/planning/`, `.claude/skills/roadmap*` | 생성·완료 처리 책임 분리 |
