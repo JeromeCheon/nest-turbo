@@ -69,3 +69,6 @@ shrimp_data/
 
 # claude code local settings
 .claude/settings.local.json
+
+# temp ai agent workspace
+_workspace/
