@@ -27,7 +27,7 @@ tools: Bash, Read, Grep
    `_workspace/pr-draft.md` 경로를 넘긴다. base를 못 받으면 `git merge-base HEAD main`
 2. 자료 수집:
    - `Read _workspace/pr-draft.md` — 제목 + 채워진 템플릿
-   - `git log --format='%H%n%s%n%n%b' main..HEAD` — 커밋 히스토리
+   - `git log --format='%H %s' main..HEAD` — 커밋 히스토리 (제목 한 줄만)
    - `git diff main..HEAD` — 실제 변경
    - `git merge-tree $(git merge-base HEAD main) HEAD main` — 머지 충돌 여부
 3. 스킬 `## 리뷰 루브릭`의 9개 항목으로 채점

@@ -26,20 +26,18 @@ description: >
 
 ## 왜 이 규칙인가
 
-커밋 히스토리는 코드의 "왜"를 담는 유일한 장기 기록이다. `git blame`으로 한 줄을
-추적했을 때 `fix bug` 한 줄만 나오면 그 커밋은 아무 정보도 주지 못한다. 6개월 뒤의
-동료(또는 나 자신)가 회귀를 추적하고 변경 의도를 복원할 수 있어야 한다. 아래 규칙은
-전부 이 목적에 복무한다.
+커밋 히스토리는 `git log --oneline`으로 훑는 목록이다. 각 줄이 제목 하나로 무엇을
+왜 했는지 읽혀야 한다. `fix bug` 같은 제목은 아무 정보도 주지 못한다. 맥락·이유가
+길게 필요하면 그건 PR 설명에 쓴다 — 커밋에는 안 쓴다. 아래 규칙은 전부 이 목적에
+복무한다.
 
 ## 1. Conventional Commits 메시지 형식
 
 ```
 <type>(<scope>): <subject>
-<빈 줄>
-<body>
-<빈 줄>
-<footer (선택)>
 ```
+
+**제목 한 줄로 끝낸다. 본문·footer를 붙이지 않는다.**
 
 ### 제목 줄 (`<type>(<scope>): <subject>`)
 
@@ -51,6 +49,8 @@ description: >
   - 소문자로 시작, 끝에 마침표 없음
   - 50자 목표, **72자 초과 금지**
   - "무엇을 했는지"를 요약하되 diff를 그대로 읽지 말 것
+  - 본문이 없으므로 제목만으로 무엇을 왜 했는지 읽혀야 한다. 제목에 안 담기면
+    커밋을 더 쪼갠다
 
 | type       | 용도                                                         |
 | ---------- | ------------------------------------------------------------ |
@@ -64,31 +64,20 @@ description: >
 | `build`    | 빌드 시스템·의존성 변경 (`package.json`, `pnpm-lock`, turbo) |
 | `ci`       | CI 설정 변경 (`.github/workflows`, 훅)                       |
 | `chore`    | 그 외 잡무 (설정 파일, `.gitignore`, 도구 구성)              |
-| `revert`   | 이전 커밋 되돌림. body에 `This reverts commit <sha>.`        |
+| `revert`   | 이전 커밋 되돌림 (revert는 하네스가 아니라 직접 처리)        |
 
 > `.claude/` 하네스(에이전트·스킬) 추가/변경은 도구 동작을 늘리는 것이므로 `feat`,
 > 포인터·문서 갱신은 `docs`, 설정 파일 손질은 `chore`로 본다. scope는 `harness`.
 
-### 본문 (`<body>`) — **필수, 생략 불가**
+### 본문 (`<body>`) — **넣지 않는다**
 
-- 제목 아래 **빈 줄 하나** 두고 시작
-- **이유 한 문장, 40자 이내.** 이 커밋이 왜 필요한지만 적는다. 두 문장·나열
-  (불릿, "A와 B와 C", "~도 함께")·부연·파일 목록 금지 — 무엇이 바뀌었는지는
-  `git show`가 답한다
-- 제목을 말만 바꿔 다시 쓰는 건 본문이 아니다
-  - 나쁨: 제목 `fix(auth): correct token expiry` / 본문 `Fixed the token expiry bug.`
-  - 좋음: 본문 `Refresh guard compared seconds, not ms.`
-- 40자 안에 담을 "왜"가 없다면(오타 수정 등) 그 변경은 대개 다른 커밋에 합쳐야
-  하는 신호다. 그래도 단독 커밋이면 40자 이내로 맥락 한 문장을 남긴다
-
-### 푸터 (`<footer>`) — 선택
-
-- `BREAKING CHANGE: <설명>` — 호환성 깨짐. 있으면 반드시
-- `Refs: #123`, `Closes: #123` — 이슈 연결
+- 커밋 메시지는 제목 한 줄이 전부다. 제목 뒤에 빈 줄·본문·footer를 붙이지 않는다
+- 변경 이유·맥락·이슈 링크·BREAKING CHANGE 설명이 필요하면 **PR 설명**에 쓴다
+- `git commit -m "<제목>"` 한 번. `-m`을 두 번 쓰거나 `-F`로 여러 줄을 넣지 않는다
 
 ## 2. 금지 — 절대 넣지 않는다
 
-- **한 줄 커밋** (본문 없는 커밋). 예외 없음
+- **본문·footer** — 커밋은 제목 한 줄로 끝낸다. 여러 줄 메시지를 만들지 않는다
 - **`Co-Authored-By:` trailer** — 사람이 명시적으로 요청하지 않는 한 넣지 않는다
 - **`Claude-Session:` trailer**, **`🤖 Generated with ...`** 류 자동 서명 — 넣지 않는다.
   이 레포는 커밋 본문에 도구 서명을 남기지 않는 정책이다
@@ -124,8 +113,8 @@ git diff --staged                # 커밋 직전 스테이징 내용 최종 확�
 ### 비대화형 제약 (서브 에이전트)
 
 서브 에이전트는 `git add -p` 인터랙션을 쓸 수 없다. 한 파일이 여러 관심사에
-걸치면 그 파일 **전체를 지배적 관심사 커밋 하나에** 통째로 넣고, 본문에 왜 한
-커밋인지 적는다. **파일 내용을 손으로 재배열해 커밋 사이에 쪼개지 않는다** —
+걸치면 그 파일 **전체를 지배적 관심사 커밋 하나에** 통째로 넣는다.
+**파일 내용을 손으로 재배열해 커밋 사이에 쪼개지 않는다** —
 마크다운 표·코드 블록·문서 섹션이 커밋 경계에서 문법이 깨진다(이 레포에서 실제
 발생 이력 있음). 손 재구성 없이는 분할이 불가능하면 REDO를 억지로 이행하지 말고
 `CANNOT_COMPLY`로 에스컬레이션한다(오케스트레이션 참조).
@@ -141,20 +130,16 @@ git diff --staged                # 커밋 직전 스테이징 내용 최종 확�
 - 보호 브랜치에 있으면 커밋하지 말고 새 브랜치명을 사람에게 확인받는다
   (브랜치 자동 생성 금지)
 
-## 5. 메시지 템플릿
+## 5. 메시지 예시
+
+제목 한 줄만. 아래 전부 본문 없음.
 
 ```
 feat(robots): add MQTT command listener for part clicks
-
-Nobody consumed the published commands.
-
-Refs: #14
-```
-
-```
+fix(mqtt): reconnect with 2s backoff on broker drop
+refactor(auth): extract token rotation into SessionService
 chore(deps): pin pnpm to 8.15.5 in packageManager field
-
-pnpm 9 on CI broke the frozen lockfile.
+docs(api): note the response envelope shape in README
 ```
 
 ## 6. 참고
@@ -178,7 +163,7 @@ pnpm 9 on CI broke the frozen lockfile.
 | commit-writer   | `commit-writer`   | sonnet | 변경 분석 → 논리 단위 분할 → 커밋 작성  |
 | commit-reviewer | `commit-reviewer` | sonnet | 커밋 루브릭 채점 → `PASS` / `REDO` 판정 |
 
-> writer는 haiku에서 sonnet으로 올렸다. 분할 판단·본문 절제·마크다운 보존에서
+> writer는 haiku에서 sonnet으로 올렸다. 분할 판단·제목 정확성·마크다운 보존에서
 > haiku가 반복 실패해 REDO 루프를 소진했다.
 
 두 에이전트는 시작 시 이 파일의 `## 기준` 섹션을 읽는다.
@@ -261,10 +246,10 @@ pnpm 9 on CI broke the frozen lockfile.
 
 ### REDO 흐름
 
-1. Phase 1 → writer가 커밋 1개를 본문 없이 생성
-2. Phase 2 → reviewer `REDO` (기준 §1 본문 필수 위반)
+1. Phase 1 → writer가 커밋 1개를 제목 뒤 본문까지 붙여 생성
+2. Phase 2 → reviewer `REDO` (기준 §1·§2 본문 금지 위반)
 3. Phase 3 → `_workspace/commit-review.md` 실어 writer 재호출 →
-   `git commit --amend` 로 본문 추가
+   `git commit --amend -m "<제목>"` 로 본문 제거
 4. Phase 2 재검증 → `PASS`
 5. Phase 4 → 보고
 
