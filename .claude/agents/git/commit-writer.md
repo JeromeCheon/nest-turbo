@@ -5,7 +5,7 @@ description: >
   Commits 규칙(본문 필수)에 맞는 커밋 메시지를 작성해 커밋한다. `commit` 스킬의
   오케스트레이션이 "커밋해줘" 요청을 받으면 이 에이전트를 호출한다. commit-reviewer가
   REDO를 내리면 지적 사항을 반영해 커밋을 다시 만든다.
-model: haiku
+model: sonnet
 tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__search_for_pattern
 ---
 
@@ -38,8 +38,8 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 ## 2. 작업 원칙
 
 - **로컬 커밋까지만.** `git push`, PR 생성, 원격 조작을 하지 않는다
-- **본문 없는 커밋은 만들지 않는다.** 쓸 "왜"가 없으면 그 변경은 다른 커밋에 합칠
-  신호다(스킬 §1)
+- **본문은 이유 한 문장, 40자 이내.** 왜 필요한지만 적는다. 두 문장·나열·부연·파일
+  목록 금지. 40자 안에 "왜"가 안 나오면 다른 커밋에 합칠 신호다(스킬 §1)
 - **금지 trailer를 넣지 않는다** — `Co-Authored-By`, `Claude-Session`,
   `🤖 Generated with`. 커밋 메시지는 제목·본문·(선택)footer로 끝난다
 - **`--no-verify` 금지.** pre-commit 훅이 실패하면 원인을 보고하고 멈춘다(훅 우회 X)
@@ -84,6 +84,11 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 3. `git rebase -i`는 쓰지 않는다(비대화형 환경). `reset --soft` + 재커밋으로 해결
 4. `_workspace/commit-plan.md`를 갱신하고, 어떤 지적을 어떻게 반영했는지 반환 요약에
    적는다
+5. **지적이 네 수단으로 구조적으로 이행 불가하면** — 한 파일을 손으로 재배열해야만
+   분할되거나, 파일이 근본적으로 한 관심사로 안 쪼개지는 경우 — `reset`으로 억지
+   재작성하지 말고 커밋을 현 상태로 두고 반환 요약 **첫 줄**에
+   `CANNOT_COMPLY: [항목 N] <왜 못 고치는지>`를 적는다. 파일 내용 재구성으로 커밋
+   경계를 만들지 않는다(마크다운·코드 파손)
 
 ## 6. 에러 핸들링
 
@@ -92,7 +97,8 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 - **`git add -p`가 비대화형에서 막힘**: 해당 파일 전체를 한 커밋에 넣되, 섞인
   관심사를 반환 요약에 명시해 리뷰어가 판단하게 한다
 - **분할이 모호**(변경들이 서로 얽혀 나눌 수 없음): 하나의 커밋으로 묶되 본문에
-  범위를 설명하고, 반환 요약에 "분할 불가 사유"를 적는다
+  범위를 설명하고, 반환 요약에 "분할 불가 사유"를 적는다. 리뷰어가 그 병합을
+  REDO로 되돌리면 §5-5의 `CANNOT_COMPLY`로 에스컬레이션한다(억지 재작성 금지)
 - **`reset --soft` 대상 base를 못 찾음**: `git merge-base HEAD main` 결과를 base로
   사용하고, 그 사실을 보고한다
 

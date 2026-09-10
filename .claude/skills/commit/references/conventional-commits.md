@@ -42,15 +42,12 @@ fix(mqtt): reconnect on broker drop
 Added reconnect logic for broker drop.
 ```
 
-**good** — 왜/맥락:
+**good** — 왜 한 문장, 40자 이내:
 
 ```
 fix(mqtt): reconnect on broker drop
 
-The mqtt client emitted 'offline' when EMQX restarted and never
-recovered, so all subsequent part clicks silently failed. Enable the
-built-in reconnect with a 2s backoff and log each attempt so operators
-can see the gap.
+Stayed offline after every EMQX restart.
 ```
 
 ### 분할
