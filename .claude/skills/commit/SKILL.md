@@ -72,17 +72,14 @@ description: >
 ### 본문 (`<body>`) — **필수, 생략 불가**
 
 - 제목 아래 **빈 줄 하나** 두고 시작
-- 각 줄 72자에서 wrap
-- **"무엇"이 아니라 "왜"와 "맥락"**: 이 변경이 필요한 이유, 이전 동작의 문제,
-  선택한 접근과 버린 대안, 부수 효과. diff를 보면 아는 내용(어떤 함수를 고쳤는지)은
-  반복하지 않는다
-- 최소 1문장. 제목을 말만 바꿔 다시 쓰는 건 본문이 아니다
+- **이유 한 문장, 40자 이내.** 이 커밋이 왜 필요한지만 적는다. 두 문장·나열
+  (불릿, "A와 B와 C", "~도 함께")·부연·파일 목록 금지 — 무엇이 바뀌었는지는
+  `git show`가 답한다
+- 제목을 말만 바꿔 다시 쓰는 건 본문이 아니다
   - 나쁨: 제목 `fix(auth): correct token expiry` / 본문 `Fixed the token expiry bug.`
-  - 좋음: 본문 `Access tokens were issued with a 15-minute TTL but the refresh`
-    `guard compared against seconds, so every token was treated as expired`
-    `immediately. Align both sides on milliseconds.`
-- 정말 사소해서 쓸 "왜"가 없다면(오타 수정 등) 그 변경은 대개 다른 커밋에 합쳐야
-  하는 신호다. 그래도 단독 커밋이면 한 문장으로 맥락을 남긴다
+  - 좋음: 본문 `Refresh guard compared seconds, not ms.`
+- 40자 안에 담을 "왜"가 없다면(오타 수정 등) 그 변경은 대개 다른 커밋에 합쳐야
+  하는 신호다. 그래도 단독 커밋이면 40자 이내로 맥락 한 문장을 남긴다
 
 ### 푸터 (`<footer>`) — 선택
 
@@ -124,6 +121,15 @@ git diff --staged                # 커밋 직전 스테이징 내용 최종 확�
 
 관심사가 섞인 파일은 `git add -p`로 해당 hunk만 담고, 나머지는 다음 커밋으로 넘긴다.
 
+### 비대화형 제약 (서브 에이전트)
+
+서브 에이전트는 `git add -p` 인터랙션을 쓸 수 없다. 한 파일이 여러 관심사에
+걸치면 그 파일 **전체를 지배적 관심사 커밋 하나에** 통째로 넣고, 본문에 왜 한
+커밋인지 적는다. **파일 내용을 손으로 재배열해 커밋 사이에 쪼개지 않는다** —
+마크다운 표·코드 블록·문서 섹션이 커밋 경계에서 문법이 깨진다(이 레포에서 실제
+발생 이력 있음). 손 재구성 없이는 분할이 불가능하면 REDO를 억지로 이행하지 말고
+`CANNOT_COMPLY`로 에스컬레이션한다(오케스트레이션 참조).
+
 ## 4. GitHub Flow 브랜치 전략
 
 - **`main`만 장수 브랜치**이고 항상 배포 가능 상태로 유지
@@ -140,10 +146,7 @@ git diff --staged                # 커밋 직전 스테이징 내용 최종 확�
 ```
 feat(robots): add MQTT command listener for part clicks
 
-The dashboard publishes a command topic when a robot part is clicked,
-but nothing on the API side consumed it, so RobotEvent rows were never
-written. Subscribe to robot/+/command/+ in a dedicated infra adapter
-and route each message through the ApplyCommand use case.
+Nobody consumed the published commands.
 
 Refs: #14
 ```
@@ -151,9 +154,7 @@ Refs: #14
 ```
 chore(deps): pin pnpm to 8.15.5 in packageManager field
 
-CI picked up pnpm 9 from the runner default and the lockfile format
-changed, breaking `pnpm install --frozen-lockfile`. Pin the version so
-local and CI resolve identically.
+pnpm 9 on CI broke the frozen lockfile.
 ```
 
 ## 6. 참고
@@ -174,8 +175,11 @@ local and CI resolve identically.
 
 | 에이전트        | subagent_type     | model  | 역할                                    |
 | --------------- | ----------------- | ------ | --------------------------------------- |
-| commit-writer   | `commit-writer`   | haiku  | 변경 분석 → 논리 단위 분할 → 커밋 작성  |
+| commit-writer   | `commit-writer`   | sonnet | 변경 분석 → 논리 단위 분할 → 커밋 작성  |
 | commit-reviewer | `commit-reviewer` | sonnet | 커밋 루브릭 채점 → `PASS` / `REDO` 판정 |
+
+> writer는 haiku에서 sonnet으로 올렸다. 분할 판단·본문 절제·마크다운 보존에서
+> haiku가 반복 실패해 REDO 루프를 소진했다.
 
 두 에이전트는 시작 시 이 파일의 `## 기준` 섹션을 읽는다.
 
@@ -194,7 +198,7 @@ local and CI resolve identically.
 
 ### Phase 1: 커밋 작성
 
-`Agent(subagent_type: "commit-writer", model: "haiku")` 호출. 프롬프트에 담을 것:
+`Agent(subagent_type: "commit-writer", model: "sonnet")` 호출. 프롬프트에 담을 것:
 
 - (있으면) 사용자가 준 새 브랜치명
 - 사용자가 특정 변경만 커밋하라고 했으면 그 범위
@@ -203,6 +207,8 @@ local and CI resolve identically.
 반환에서 확인:
 
 - `BLOCKED: protected branch ...` → Phase 0-2로 되돌아가 사용자에게 브랜치 확인
+- `CANNOT_COMPLY: <항목> ...` → REDO 루프를 더 돌리지 않고 Phase 4로 가서
+  해당 항목을 사용자에게 그대로 에스컬레이션 (writer가 구조적으로 못 고치는 지적)
 - 만든 커밋 수 · 각 제목 · 스테이징 안 하고 남긴 변경
 
 ### Phase 2: 검증
@@ -219,6 +225,8 @@ local and CI resolve identically.
 - `PASS` → Phase 4
 - `REDO` → `_workspace/commit-review.md` 경로를 실어 commit-writer 재호출(Phase 1)
   → 다시 Phase 2. **최대 2회.**
+- 재호출 반환이 `CANNOT_COMPLY` → 루프 종료. 커밋은 현 상태로 두고 해당 항목을
+  사용자에게 보고, 판단을 넘긴다 (구조적으로 못 고치는 걸 2회 더 돌려봐야 소진)
 - 2회 REDO 후에도 `REDO` → **강제 PASS 하지 않는다.** 커밋은 그대로 두고
   `_workspace/commit-review.md` 의 미해결 위반을 사용자에게 보고, 판단을 넘긴다
 - `NO_COMMITS` → writer가 아무것도 못 만든 것. writer 반환 요약의 사유를 전달
@@ -232,13 +240,14 @@ local and CI resolve identically.
 
 ## 에러 핸들링
 
-| 상황                          | 대응                                                      |
-| ----------------------------- | --------------------------------------------------------- |
-| writer `BLOCKED`(보호 브랜치) | 사용자에게 브랜치명 확인 → 받으면 Phase 1 재호출          |
-| reviewer 커밋 범위 판정 실패  | `@{u}..HEAD` → `main..HEAD` → `-5` 폴백, 사용한 범위 보고 |
-| pre-commit 훅 실패            | writer가 훅 출력 보고 후 중단. `--no-verify` 우회 금지    |
-| writer 2회 연속 실패          | 중단하고 부분 결과(있으면) + 실패 사유 보고               |
-| 2회 REDO 후에도 미달          | 커밋 유지, 미해결 위반 사용자에게 전달, 강제 통과 안 함   |
+| 상황                          | 대응                                                          |
+| ----------------------------- | ------------------------------------------------------------- |
+| writer `BLOCKED`(보호 브랜치) | 사용자에게 브랜치명 확인 → 받으면 Phase 1 재호출              |
+| writer `CANNOT_COMPLY`        | REDO 루프 즉시 종료, 미이행 항목 사용자 보고, 강제 통과 안 함 |
+| reviewer 커밋 범위 판정 실패  | `@{u}..HEAD` → `main..HEAD` → `-5` 폴백, 사용한 범위 보고     |
+| pre-commit 훅 실패            | writer가 훅 출력 보고 후 중단. `--no-verify` 우회 금지        |
+| writer 2회 연속 실패          | 중단하고 부분 결과(있으면) + 실패 사유 보고                   |
+| 2회 REDO 후에도 미달          | 커밋 유지, 미해결 위반 사용자에게 전달, 강제 통과 안 함       |
 
 ## 테스트 시나리오
 
