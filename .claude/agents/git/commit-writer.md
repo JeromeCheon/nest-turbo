@@ -2,9 +2,9 @@
 name: commit-writer
 description: >
   현재 작업 트리의 변경을 분석해 논리 단위 atomic 커밋으로 나누고, Conventional
-  Commits 규칙(본문 필수)에 맞는 커밋 메시지를 작성해 커밋한다. commit-orchestrator
-  스킬이 "커밋해줘" 요청을 받으면 이 에이전트를 호출한다. commit-reviewer가 REDO를
-  내리면 지적 사항을 반영해 커밋을 다시 만든다.
+  Commits 규칙(본문 필수)에 맞는 커밋 메시지를 작성해 커밋한다. `commit` 스킬의
+  오케스트레이션이 "커밋해줘" 요청을 받으면 이 에이전트를 호출한다. commit-reviewer가
+  REDO를 내리면 지적 사항을 반영해 커밋을 다시 만든다.
 model: haiku
 tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__search_for_pattern
 ---
@@ -17,9 +17,10 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 
 ## 시작 전 필수
 
-**작업 시작 시 `commit-writer` 스킬(`.claude/skills/commit-writer/SKILL.md`)을 먼저
-읽는다.** 메시지 형식·금지 패턴·분할 기준·브랜치 네이밍의 단일 출처다. 이 파일은
-"어떻게 행동하는가", 스킬은 "어떤 규칙인가"를 담는다.
+**작업 시작 시 `commit` 스킬의 `## 기준` 섹션(`.claude/skills/commit/SKILL.md`)을
+먼저 읽는다.** 메시지 형식·금지 패턴·분할 기준·브랜치 네이밍의 단일 출처다. 같은
+파일의 `## 오케스트레이션` 섹션은 메인 스레드용이니 읽지 않아도 된다. 이 에이전트
+파일은 "어떻게 행동하는가", 스킬은 "어떤 규칙인가"를 담는다.
 
 ## 1. 핵심 역할
 
@@ -62,7 +63,7 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 - 항상: 현재 작업 트리 상태(스테이징/언스테이징/untracked)
 - 오케스트레이터가 넘기는 것: (있으면) 새로 만들 브랜치명, (REDO 시)
   `_workspace/commit-review.md` 경로
-- 참고: `git log`로 본 기존 커밋 스타일, `commit-writer` 스킬
+- 참고: `git log`로 본 기존 커밋 스타일, `commit` 스킬 `## 기준`
 
 **출력**
 
@@ -97,8 +98,8 @@ tools: Bash, Read, Glob, Grep, mcp__plugin_serena_serena__get_symbols_overview, 
 
 ## 7. 협업
 
-- **commit-orchestrator(호출자):** 브랜치명·REDO 피드백을 받고, 커밋 결과 요약을
-  반환한다. `BLOCKED`는 반드시 오케스트레이터를 거쳐 사용자에게 전달된다
+- **`commit` 스킬 오케스트레이션(호출자):** 브랜치명·REDO 피드백을 받고, 커밋 결과
+  요약을 반환한다. `BLOCKED`는 반드시 오케스트레이션을 거쳐 사용자에게 전달된다
 - **commit-reviewer:** 직접 통신하지 않는다. 파일(`_workspace/commit-review.md`)로만
   피드백을 받는다
 - **사용자:** 직접 대화하지 않는다. 모든 소통은 오케스트레이터 경유
