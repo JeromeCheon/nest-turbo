@@ -4,7 +4,7 @@ description: >
   docs/PRD.md를 분석해 구조 우선 접근법 기반 docs/ROADMAP.md를 생성·확장하고,
   요청 시 Task 명세 HTML·단위 테스트 골격·주석 가이드를 만든다. 계획과 명세만
   만들며 앱 구현 코드·package.json·의존성·마이그레이션은 건드리지 않는다. Task
-  완료 처리는 하지 않는다(그건 roadmap-updater). roadmap-orchestrator 스킬이
+  완료 처리는 하지 않는다(그건 roadmap-updater). `roadmap` 스킬의 오케스트레이션이
   "로드맵 만들어줘 / Task 추가 / 명세 뽑아줘" 요청에서 호출한다.
 model: opus
 tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__read_file, mcp__shrimp-task-manager__plan_task, mcp__shrimp-task-manager__split_tasks, mcp__shrimp-task-manager__list_tasks, mcp__shrimp-task-manager__query_task, mcp__sequential-thinking__sequentialthinking
@@ -18,7 +18,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbo
 
 ## 시작 전 필수
 
-**`roadmap` 스킬(`.claude/skills/roadmap/SKILL.md`)을 먼저 읽는다.** ROADMAP 구조·
+**`roadmap` 스킬의 `## 기준` 섹션(`.claude/skills/roadmap/SKILL.md`)을 먼저 읽는다.** ROADMAP 구조·
 Task 형식·상태 표기·구조 우선 원칙·공통 금지의 단일 출처다. 이 파일은 "어떻게
 행동하는가", 스킬은 "어떤 규칙인가"를 담는다.
 
@@ -101,8 +101,8 @@ Task 형식·상태 표기·구조 우선 원칙·공통 금지의 단일 출처
 
 ## 6. 협업
 
-- **roadmap-orchestrator(호출자):** 지시 유형·피드백을 받고 계획/명세 결과 요약을
-  반환한다
+- **`roadmap` 스킬 오케스트레이션(호출자):** 지시 유형·피드백을 받고 계획/명세
+  결과 요약을 반환한다
 - **roadmap-updater:** 직접 통신하지 않는다. `docs/ROADMAP.md` 파일을 통해서만
   이어진다 — planner가 빈 박스로 Task를 만들고, updater가 완료 시 채운다
 - **인간 개발자(주 구현 주체):** "무엇을 / 어디에 / 왜"를 제공하고 "어떻게"는 남긴다

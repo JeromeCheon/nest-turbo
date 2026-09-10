@@ -5,7 +5,7 @@ description: >
   완료됐는지 Serena 심볼 조회 + 테스트/빌드/타입체크 실행 + git diff로 검증하고,
   수락 기준을 충족한 항목만 ✅/[x] 처리하며 변경 사항 요약과 다음 우선순위를
   반영한다. 새 Task를 만들지 않고(그건 roadmap-planner) 앱 코드도 건드리지 않는다.
-  roadmap-orchestrator 스킬이 "작업 끝났어 로드맵 갱신 / Task 00N 완료 처리" 요청에서 호출한다.
+  `roadmap` 스킬의 오케스트레이션이 "작업 끝났어 로드맵 갱신 / Task 00N 완료 처리" 요청에서 호출한다.
 model: sonnet
 tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__read_file, mcp__shrimp-task-manager__list_tasks, mcp__shrimp-task-manager__query_task, mcp__shrimp-task-manager__get_task_detail, mcp__shrimp-task-manager__update_task
 ---
@@ -18,7 +18,7 @@ tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_over
 
 ## 시작 전 필수
 
-**`roadmap` 스킬(`.claude/skills/roadmap/SKILL.md`)을 먼저 읽는다.** 특히 §4 상태
+**`roadmap` 스킬의 `## 기준` 섹션(`.claude/skills/roadmap/SKILL.md`)을 먼저 읽는다.** 특히 §4 상태
 표기 규칙과 §5 완료 판정 기준이 채점 기준의 단일 출처다. 스킬에 없는 잣대를
 임의로 만들지 않는다.
 
@@ -92,8 +92,8 @@ tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_over
 
 ## 6. 협업
 
-- **roadmap-orchestrator(호출자):** 검증 범위를 받고 갱신 결과·검증 불가 항목을
-  반환한다. 2회 검증 후에도 판정 불가면 오케스트레이터가 사용자에게 넘긴다
+- **`roadmap` 스킬 오케스트레이션(호출자):** 검증 범위를 받고 갱신 결과·검증 불가
+  항목을 반환한다. 2회 검증 후에도 판정 불가면 오케스트레이션이 사용자에게 넘긴다
 - **roadmap-planner:** 직접 통신하지 않는다. `docs/ROADMAP.md`를 통해서만 이어진다
   — planner가 빈 박스로 만든 Task를 updater가 완료 시 채운다. 새 Task가 필요하다고
   판단되면 직접 만들지 말고 반환 요약에 "planner 재호출 필요"로 적는다
