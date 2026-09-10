@@ -97,3 +97,18 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 | 날짜       | 변경 내용                                                                                                     | 대상                                                  | 사유                     |
 | ---------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------ |
 | 2026-09-10 | 초기 구성 — `development-planner` 삭제 후 planner/updater로 분리 리팩터, `roadmap` 스킬 + 오케스트레이터 추가 | `.claude/agents/planning/`, `.claude/skills/roadmap*` | 생성·완료 처리 책임 분리 |
+
+## 하네스: git commit
+
+**목표:** 자연어 커밋 요청을 Conventional Commits + GitHub Flow 규칙의 검증된 커밋으로 변환 (생성 → 검증 → REDO).
+
+**트리거:** "커밋해줘" 등 커밋 생성/수정 요청 시 `commit-orchestrator` 스킬 사용. 커밋 로그 조회·revert·PR 생성은 직접 처리.
+
+**정책:** 하네스가 만드는 커밋에는 `Co-Authored-By` / `Claude-Session` / `🤖 Generated with` trailer를 넣지 않는다 (이 레포 한정, 세션 기본 attribution 지침 오버라이드). 한 줄 커밋 금지 — 본문 필수. 로컬 커밋까지만, push는 명시 요청 시.
+
+**변경 이력:**
+
+| 날짜       | 변경 내용                                                             | 대상                                             | 사유           |
+| ---------- | --------------------------------------------------------------------- | ------------------------------------------------ | -------------- |
+| 2026-09-10 | 초기 구성 (commit-writer / commit-reviewer / 스킬 2 + 오케스트레이터) | `.claude/agents/git/`, `.claude/skills/commit-*` | -              |
+| 2026-09-10 | commit-reviewer 루브릭 항목 2·4 임계값 `TODO(human)` 대기             | `agents/git/commit-reviewer.md`                  | 정책 결정 위임 |
