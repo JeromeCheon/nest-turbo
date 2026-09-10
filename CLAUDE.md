@@ -84,31 +84,42 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 
 `playwright`, `context7`(HTTP), `sequential-thinking`, `shadcn`, `shrimp-task-manager`(DATA_DIR=`shrimp_data/`). Serena는 플러그인으로 제공.
 
-## 하네스: roadmap
+## 하네스 (공통 모델)
 
-**목표:** `docs/PRD.md` → `docs/ROADMAP.md` 생성·확장(planner)과 구현 후 완료 검증·상태 갱신(updater)을 분리 조율.
-
-**트리거:** 로드맵 생성/Task 추가/명세 요청, 또는 "작업 끝났어 로드맵 갱신 / Task 완료 처리" 요청 시 `roadmap-orchestrator` 스킬 사용. 로드맵 내용 단순 조회는 직접 응답.
-
-**정책:** 두 에이전트 모두 앱 구현 코드·`package.json`·의존성·`prisma migrate`를 건드리지 않는다. 쓰기는 `docs/ROADMAP.md` / `docs/specs/*.html` / (요청 시) 테스트 골격만. updater는 수락 기준을 코드베이스에서 실제 검증(Serena + 테스트/빌드 실행)한 항목만 `✅` 처리.
-
-**변경 이력:**
-
-| 날짜       | 변경 내용                                                                                                     | 대상                                                  | 사유                     |
-| ---------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------------------------ |
-| 2026-09-10 | 초기 구성 — `development-planner` 삭제 후 planner/updater로 분리 리팩터, `roadmap` 스킬 + 오케스트레이터 추가 | `.claude/agents/planning/`, `.claude/skills/roadmap*` | 생성·완료 처리 책임 분리 |
+각 하네스 = **주 스킬 1개**(`## 기준`/`## 리뷰 루브릭` + `## 오케스트레이션`) +
+보조 스킬 + `.claude/agents/`의 에이전트 2개(생성 / 검증-REDO). 에이전트는 주 스킬을
+경로로 참조하고 자기 섹션만 읽는다. 별도 `*-orchestrator` 스킬은 두지 않는다.
 
 ## 하네스: git commit
 
 **목표:** 자연어 커밋 요청을 Conventional Commits + GitHub Flow 규칙의 검증된 커밋으로 변환 (생성 → 검증 → REDO).
 
-**트리거:** "커밋해줘" 등 커밋 생성/수정 요청 시 `commit-orchestrator` 스킬 사용. 커밋 로그 조회·revert·PR 생성은 직접 처리.
+**트리거:** "커밋해줘" 등 커밋 생성/수정 요청 시 `commit` 스킬 사용. 커밋 로그 조회·revert는 직접 처리.
 
 **정책:** 하네스가 만드는 커밋에는 `Co-Authored-By` / `Claude-Session` / `🤖 Generated with` trailer를 넣지 않는다 (이 레포 한정, 세션 기본 attribution 지침 오버라이드). 한 줄 커밋 금지 — 본문 필수. 로컬 커밋까지만, push는 명시 요청 시.
 
-**변경 이력:**
+## 하네스: roadmap
 
-| 날짜       | 변경 내용                                                             | 대상                                             | 사유           |
-| ---------- | --------------------------------------------------------------------- | ------------------------------------------------ | -------------- |
-| 2026-09-10 | 초기 구성 (commit-writer / commit-reviewer / 스킬 2 + 오케스트레이터) | `.claude/agents/git/`, `.claude/skills/commit-*` | -              |
-| 2026-09-10 | commit-reviewer 루브릭 항목 2·4 임계값 `TODO(human)` 대기             | `agents/git/commit-reviewer.md`                  | 정책 결정 위임 |
+**목표:** `docs/PRD.md` → `docs/ROADMAP.md` 생성·확장(planner)과 구현 후 완료 검증·상태 갱신(updater)을 분리 조율.
+
+**트리거:** 로드맵 생성/Task 추가/명세 요청, 또는 "작업 끝났어 로드맵 갱신 / Task 완료 처리" 요청 시 `roadmap` 스킬 사용. 로드맵 내용 단순 조회는 직접 응답.
+
+**정책:** 두 에이전트 모두 앱 구현 코드·`package.json`·의존성·`prisma migrate`를 건드리지 않는다. 쓰기는 `docs/ROADMAP.md` / `docs/specs/*.html` / (요청 시) 테스트 골격만. updater는 수락 기준을 코드베이스에서 실제 검증(Serena + 테스트/빌드 실행)한 항목만 `✅` 처리.
+
+## 하네스: github PR
+
+**목표:** 현재 브랜치의 커밋들을 `.github/pull_request_template.md` 기반 PR 초안으로 만들고(pr-writer), 루브릭 검증 + REDO 후(pr-reviewer), **최종 PASS일 때만** `gh`로 draft PR 생성.
+
+**트리거:** "PR 올려줘", "이 브랜치 PR 만들어줘", "풀리퀘" 등 요청 시 `pr-review` 스킬 사용. PR 목록 조회·머지·revert는 직접 처리.
+
+**정책:** pr-reviewer는 GitHub에 게시하지 않고 로컬 리포트만. PASS 전까지 GitHub에 아무것도 안 만듦. 항상 `--draft`로 생성(ready 전환·머지는 사람이). 커밋 히스토리 문제는 `commit` 하네스로 넘긴다. 작업 트리가 dirty면 중단하고 `commit` 하네스 먼저 안내.
+
+## 하네스 변경 이력
+
+| 날짜       | 변경 내용                                                                                                                                                      | 대상                                                                   | 사유                                |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------- |
+| 2026-09-10 | commit 하네스 초기 구성 (commit-writer / commit-reviewer / commit-writer·commit-orchestrator 스킬)                                                             | `.claude/agents/git/`, `.claude/skills/commit-*`                       | -                                   |
+| 2026-09-10 | roadmap 하네스 초기 구성 — `development-planner` 삭제 후 planner/updater 분리, `roadmap`·`roadmap-orchestrator` 스킬                                           | `.claude/agents/planning/`, `.claude/skills/roadmap*`                  | 생성·완료 처리 책임 분리            |
+| 2026-09-10 | github PR 하네스 추가 (pr-writer / pr-reviewer / `pr-create`·`pr-review` 스킬)                                                                                 | `.claude/agents/git/pr-*`, `.claude/skills/pr-*`                       | -                                   |
+| 2026-09-10 | 오케스트레이션 병합 — `commit-orchestrator`→`commit`, `roadmap-orchestrator`→`roadmap` 주 스킬 내 `## 오케스트레이션` 섹션으로 흡수, 두 orchestrator 스킬 삭제 | `.claude/skills/`                                                      | 하네스당 파일 1개로 유지보수 단순화 |
+| 2026-09-10 | 루브릭 임계값 확정 — 본문/개요 재진술 판정 = 제목과 90% 이상 겹침, 개요 2문장·"왜" 필수, 원자성 디렉토리 상한 2, type 혼재 원칙 REDO                           | `agents/git/commit-reviewer.md` §3, `skills/pr-review/SKILL.md` 항목 9 | 통과/탈락 경계 정의                 |
