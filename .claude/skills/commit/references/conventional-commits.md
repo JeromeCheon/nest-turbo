@@ -34,20 +34,10 @@
 
 ### 본문
 
-**bad** — 제목 재진술:
+본문은 넣지 않는다. 커밋은 제목 한 줄이 전부다. 이유·맥락은 PR 설명에 쓴다.
 
 ```
-fix(mqtt): reconnect on broker drop
-
-Added reconnect logic for broker drop.
-```
-
-**good** — 왜 한 문장, 40자 이내:
-
-```
-fix(mqtt): reconnect on broker drop
-
-Stayed offline after every EMQX restart.
+fix(mqtt): reconnect with 2s backoff on broker drop   ← 이게 전부
 ```
 
 ### 분할
@@ -68,26 +58,13 @@ feat(auth): add JWT login use case
 
 순서도 의미 있다 — 포맷팅·리팩터를 먼저 두면 기능 커밋의 diff가 깨끗해진다.
 
-## revert 형식
+## revert
 
-```
-revert(web): remove optimistic robot status update
-
-This reverts commit 3f2a1b0c.
-
-The optimistic update showed "online" before the MQTT state message
-arrived, which misled users when the broker was actually down. Revert
-until we can distinguish "pending" from "confirmed".
-```
+revert는 이 하네스가 아니라 직접 처리한다. `git revert`가 만드는 기본 메시지를
+제목 한 줄로 줄이고(`git revert --no-edit` 후 `git commit --amend -m`), 되돌린
+사유는 PR 설명에 쓴다.
 
 ## BREAKING CHANGE
 
-```
-feat(@repo/api): rename stateTopic() to robotStateTopic()
-
-The old name collided with the session state helper and made imports
-ambiguous across web and api.
-
-BREAKING CHANGE: stateTopic() is now robotStateTopic(). Update all
-call sites in apps/web and apps/api.
-```
+제목은 그대로 `type(scope): subject`. 호환성이 깨진다는 사실과 마이그레이션
+안내는 **PR 설명**에 `BREAKING CHANGE:` 단락으로 쓴다. 커밋 메시지에는 넣지 않는다.

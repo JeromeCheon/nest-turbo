@@ -96,7 +96,7 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 
 **트리거:** "커밋해줘" 등 커밋 생성/수정 요청 시 `commit` 스킬 사용. 커밋 로그 조회·revert는 직접 처리.
 
-**정책:** 하네스가 만드는 커밋에는 `Co-Authored-By` / `Claude-Session` / `🤖 Generated with` trailer를 넣지 않는다 (이 레포 한정, 세션 기본 attribution 지침 오버라이드). 한 줄 커밋 금지 — 본문 필수. 로컬 커밋까지만, push는 명시 요청 시.
+**정책:** 하네스가 만드는 커밋에는 `Co-Authored-By` / `Claude-Session` / `🤖 Generated with` trailer를 넣지 않는다 (이 레포 한정, 세션 기본 attribution 지침 오버라이드). 커밋 메시지는 제목 한 줄만 — 본문·footer 없음, 이유·맥락은 PR 설명에. 로컬 커밋까지만, push는 명시 요청 시.
 
 ## 하네스: roadmap
 
@@ -116,11 +116,11 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 
 ## 하네스 변경 이력
 
-| 날짜       | 변경 내용                                                                                                                                                          | 대상                                                                   | 사유                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------- |
-| 2026-09-10 | commit 하네스 초기 구성 (commit-writer / commit-reviewer / commit-writer·commit-orchestrator 스킬)                                                                 | `.claude/agents/git/`, `.claude/skills/commit-*`                       | -                                           |
-| 2026-09-10 | roadmap 하네스 초기 구성 — `development-planner` 삭제 후 planner/updater 분리, `roadmap`·`roadmap-orchestrator` 스킬                                               | `.claude/agents/planning/`, `.claude/skills/roadmap*`                  | 생성·완료 처리 책임 분리                    |
-| 2026-09-10 | github PR 하네스 추가 (pr-writer / pr-reviewer / `pr-create`·`pr-review` 스킬)                                                                                     | `.claude/agents/git/pr-*`, `.claude/skills/pr-*`                       | -                                           |
-| 2026-09-10 | 오케스트레이션 병합 — `commit-orchestrator`→`commit`, `roadmap-orchestrator`→`roadmap` 주 스킬 내 `## 오케스트레이션` 섹션으로 흡수, 두 orchestrator 스킬 삭제     | `.claude/skills/`                                                      | 하네스당 파일 1개로 유지보수 단순화         |
-| 2026-09-10 | 루브릭 임계값 확정 — 본문/개요 재진술 판정 = 제목과 90% 이상 겹침, 개요 2문장·"왜" 필수, 원자성 디렉토리 상한 2, type 혼재 원칙 REDO                               | `agents/git/commit-reviewer.md` §3, `skills/pr-review/SKILL.md` 항목 9 | 통과/탈락 경계 정의                         |
-| 2026-09-10 | commit 하네스 하드닝 — 본문 = 이유 1문장 40자 이내, 비대화형 파일 손 재구성 금지, writer 구조적 미이행 시 `CANNOT_COMPLY` 에스컬레이션, commit-writer haiku→sonnet | `skills/commit/SKILL.md`, `agents/git/commit-{writer,reviewer}.md`     | 마크다운 파손·본문 비대·REDO 소진 재발 방지 |
+| 날짜       | 변경 내용                                                                                                                                                                                      | 대상                                                                                                                   | 사유                                        |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| 2026-09-10 | commit 하네스 초기 구성 (commit-writer / commit-reviewer / commit-writer·commit-orchestrator 스킬)                                                                                             | `.claude/agents/git/`, `.claude/skills/commit-*`                                                                       | -                                           |
+| 2026-09-10 | roadmap 하네스 초기 구성 — `development-planner` 삭제 후 planner/updater 분리, `roadmap`·`roadmap-orchestrator` 스킬                                                                           | `.claude/agents/planning/`, `.claude/skills/roadmap*`                                                                  | 생성·완료 처리 책임 분리                    |
+| 2026-09-10 | github PR 하네스 추가 (pr-writer / pr-reviewer / `pr-create`·`pr-review` 스킬)                                                                                                                 | `.claude/agents/git/pr-*`, `.claude/skills/pr-*`                                                                       | -                                           |
+| 2026-09-10 | 오케스트레이션 병합 — `commit-orchestrator`→`commit`, `roadmap-orchestrator`→`roadmap` 주 스킬 내 `## 오케스트레이션` 섹션으로 흡수, 두 orchestrator 스킬 삭제                                 | `.claude/skills/`                                                                                                      | 하네스당 파일 1개로 유지보수 단순화         |
+| 2026-09-10 | 루브릭 임계값 확정 — 본문/개요 재진술 판정 = 제목과 90% 이상 겹침, 개요 2문장·"왜" 필수, 원자성 디렉토리 상한 2, type 혼재 원칙 REDO                                                           | `agents/git/commit-reviewer.md` §3, `skills/pr-review/SKILL.md` 항목 9                                                 | 통과/탈락 경계 정의                         |
+| 2026-09-10 | commit 하네스 하드닝 — 커밋 메시지 제목 한 줄만(본문·footer 폐지, 맥락은 PR로), 비대화형 파일 손 재구성 금지, writer 구조적 미이행 시 `CANNOT_COMPLY` 에스컬레이션, commit-writer haiku→sonnet | `skills/commit/SKILL.md`, `skills/commit/references/conventional-commits.md`, `agents/git/commit-{writer,reviewer}.md` | 마크다운 파손·본문 비대·REDO 소진 재발 방지 |
