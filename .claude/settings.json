@@ -3,5 +3,10 @@
     "skill-creator@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "ponytail@ponytail": true
+  },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
   }
 }
