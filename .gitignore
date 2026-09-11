@@ -72,3 +72,6 @@ shrimp_data/
 
 # temp ai agent workspace
 _workspace/
+
+# task spec
+docs/specs/*
