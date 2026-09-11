@@ -4,7 +4,7 @@ description: >
   GitHub PR 하네스. "PR 올려줘", "이 브랜치 PR 만들어줘", "PR 초안", "풀리퀘",
   "pull request 생성" 요청 시 pr-writer가 `.github/pull_request_template.md`를 채운
   초안을 만들고, pr-reviewer가 루브릭으로 검증한 뒤 기준 미달이면 REDO를 돌리고,
-  최종 PASS일 때만 `gh`로 draft PR을 생성한다. 후속: "PR 다시", "PR 설명 고쳐",
+  최종 PASS일 때만 `gh`로 PR을 생성한다. 후속: "PR 다시", "PR 설명 고쳐",
   "PR REDO"도. PR 목록 조회·머지·revert는 직접 처리. 이 파일은 `## 리뷰 루브릭`
   (pr-reviewer가 읽는 채점 기준)과 `## 오케스트레이션`(메인 스레드가 두 에이전트를
   굴리는 절차)으로 나뉜다.
@@ -36,8 +36,8 @@ PR 리뷰의 절반은 "이 설명만 읽고 변경 의도를 이해할 수 있�
    "어떻게"(구현 단계) 나열이면 실패. (분량 하한은 항목 9)
 3. **PR 유형 체크박스가 diff와 일치** — 체크된 항목이 실제 변경 성격과 맞고,
    해당하는데 빠진 항목이 없다
-4. **작업 내용이 커밋을 사람이 읽을 수준으로 정리** — 커밋 해시/제목 나열이 아니라
-   변경을 묶어 설명. (상세도 기준은 항목 9)
+4. **작업 내용 = 요약 + 개조식** — 맨 앞 요약 1~2문장 뒤에 개발 기능/로직을 개조식
+   불릿으로 열거. 커밋 해시/제목 나열이면 실패. (상세도 기준은 항목 9)
 5. **PR Checklist가 정직** — 커밋 컨벤션 준수 항목이 `<base>..HEAD` 실제 커밋과
    맞는지 교차 확인. 테스트 항목이 사실과 맞는지(테스트가 없는데 체크돼 있으면 실패)
 6. **커밋 히스토리 위생** — `<base>..HEAD`에 `WIP`·`fixup!`·`squash!`·`amend` 흔적·
@@ -54,9 +54,10 @@ HEAD main` 으로 충돌 없음 확인. 충돌 있으면 REDO(리베이스 필�
      변경이면 1문장 허용
    - **개요 재진술 금지**: 개요가 제목과 **90% 이상 겹치면** REDO (제목에 없는
      정보가 있어야 한다 — `commit-reviewer.md` §3 항목 2와 같은 90% 잣대)
-   - **작업 내용**: `<base>..HEAD` 커밋 **1개당 최소 1불릿**, 각 불릿은 커밋 제목
-     복붙이 아니라 무엇이 바뀌었는지 평문. 커밋 5개 초과면 논리 그룹으로 묶어
-     그룹당 1불릿 + 하위 세부 허용
+   - **작업 내용**: 맨 앞에 요약 **1~2문장** 필수 — 없이 불릿만이면 REDO. 이어
+     개발 기능/로직을 개조식 불릿으로, `<base>..HEAD` 커밋 **1개당 최소 1불릿**,
+     각 불릿은 커밋 제목 복붙이 아닌 명사형 한 줄. 커밋 5개 초과면 논리 그룹으로
+     묶어 그룹당 1불릿 + 하위 세부 허용
 
 **경계 사례는 통과 쪽으로** — 위 기준을 아슬하게 넘긴 초안은 PASS + 코멘트로 남기고,
 명백한 위반(개요 공란/1문장뿐/"어떻게"만 나열, 작업 내용이 커밋 해시 나열)만 REDO.
@@ -98,7 +99,7 @@ HEAD main` 으로 충돌 없음 확인. 충돌 있으면 REDO(리베이스 필�
 
 | 에이전트    | subagent_type | model  | 읽는 스킬                      | 역할                                       |
 | ----------- | ------------- | ------ | ------------------------------ | ------------------------------------------ |
-| pr-writer   | `pr-writer`   | haiku  | `pr-create`                    | 템플릿 채워 초안 작성, 최종 `gh pr create` |
+| pr-writer   | `pr-writer`   | sonnet | `pr-create`                    | 템플릿 채워 초안 작성, 최종 `gh pr create` |
 | pr-reviewer | `pr-reviewer` | sonnet | `pr-review`의 `## 리뷰 루브릭` | 초안+diff 채점 → `PASS`/`REDO`             |
 
 ## 워크플로우
@@ -116,7 +117,7 @@ HEAD main` 으로 충돌 없음 확인. 충돌 있으면 REDO(리베이스 필�
 
 ### Phase 1: 초안 작성
 
-`Agent(subagent_type: "pr-writer", model: "haiku")` 호출. 담을 것:
+`Agent(subagent_type: "pr-writer", model: "sonnet")` 호출. 담을 것:
 
 - base(`main`)/head(현재 브랜치)
 - 사용자가 준 PR 의도·관련 이슈 번호(있으면)
@@ -148,15 +149,16 @@ HEAD main` 으로 충돌 없음 확인. 충돌 있으면 REDO(리베이스 필�
 
 ### Phase 4: PASS → PR 생성
 
-1. 승인된 **제목과 본문 전문**을 사용자에게 보여준다 (outward-facing 작업 직전 고지)
-2. `Agent(subagent_type: "pr-writer", model: "haiku")` 를 `mode: create` 로 재호출 —
-   `gh pr create --base main --draft --title <t> --body-file <f>` 실행, PR URL 반환
+1. 승인된 **제목과 본문 전문**을 사용자에게 보여주고 **"이대로 PR 생성할까요?"
+   명시적 확인을 받는다** — draft가 아니라 바로 열리는 PR이므로
+2. `Agent(subagent_type: "pr-writer", model: "sonnet")` 를 `mode: create` 로 재호출 —
+   `gh pr create --base main --title <t> --body-file <f>` 실행, PR URL 반환
 3. `gh` 인증 실패·네트워크 오류면 초안 경로와 수동 생성 명령을 사용자에게 제공
 
 ### Phase 5: 보고
 
-- 생성된 PR URL, **draft 상태**임을 명시
-- "리뷰 준비되면 GitHub에서 Ready 전환 / 머지는 별도" 안내
+- 생성된 PR URL 보고 (draft 아님 — 바로 리뷰 가능)
+- "머지는 사람이 GitHub에서" 안내
 - `_workspace/` 보존
 
 ## 에러 핸들링
@@ -179,8 +181,8 @@ HEAD main` 으로 충돌 없음 확인. 충돌 있으면 REDO(리베이스 필�
 2. Phase 0 → 통과 (dirty 아님, 비보호, 커밋 있음, 기존 PR 없음)
 3. Phase 1 → pr-writer가 템플릿 채워 `_workspace/pr-draft.md` 생성
 4. Phase 2 → pr-reviewer `PASS`
-5. Phase 4 → 제목·본문 표시 → `gh pr create --draft` → PR URL
-6. Phase 5 → URL + draft 상태 보고
+5. Phase 4 → 제목·본문 표시 → 사용자 확인 → `gh pr create` → PR URL
+6. Phase 5 → URL 보고
 
 ### 에러 흐름 (dirty tree)
 
