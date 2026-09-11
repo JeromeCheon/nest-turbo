@@ -27,14 +27,15 @@
 
 ### Phase 1: 골격 + 공유 계약 구축
 
-- **Task 001: 인프라 컨테이너 + 환경변수** - 우선순위
+- **Task 001: 인프라 컨테이너 + 환경변수** ✅ - 완료
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-001-infra.spec.html`(요청 시)
-  - [ ] `docker-compose.yml`: `emqx/emqx:5`(포트 `1883` `8083` `18083`, 익명 허용) + `postgres:17-alpine`(포트 `5432`, env `POSTGRES_USER/PASSWORD/DB=robotops`, 명명 볼륨 `robotops_pgdata`, `pg_isready` healthcheck)
-  - [ ] `apps/api/.env.example`: `DATABASE_URL="postgresql://robotops:robotops@localhost:5432/robotops?schema=public"`, `JWT_SECRET`, `MQTT_URL="mqtt://localhost:1883"`, `ACCESS_TOKEN_TTL=15m`, `REFRESH_TOKEN_TTL=7d`
-  - [ ] `apps/web/.env.local.example`: `NEXT_PUBLIC_API_URL="http://localhost:3000"`, `NEXT_PUBLIC_MQTT_WS_URL="ws://localhost:8083/mqtt"`
+  - [x] `docker-compose.yml`: `emqx/emqx:5`(포트 `1883` `8083` `18083`, 익명 허용) + `postgres:17-alpine`(포트 `5432`, env `POSTGRES_USER/PASSWORD/DB=robotops`, 명명 볼륨 `robotops_pgdata`, `pg_isready` healthcheck)
+  - [x] `apps/api/.env.example`: `DATABASE_URL="postgresql://robotops:robotops@localhost:5432/robotops?schema=public"`, `JWT_SECRET`, `MQTT_URL="mqtt://localhost:1883"`, `ACCESS_TOKEN_TTL=15m`, `REFRESH_TOKEN_TTL=7d`
+  - [x] `apps/web/.env.local.example`: `NEXT_PUBLIC_API_URL="http://localhost:3000"`, `NEXT_PUBLIC_MQTT_WS_URL="ws://localhost:8083/mqtt"`
   - 완료 기준: `docker compose up -d` → EMQX 대시보드 `:18083` 접속 + `pg_isready` 통과
+    > 변경 사항 요약: `docker-compose.yml`(emqx 5.8.8 + postgres:17-alpine healthcheck) + 양쪽 `.env.example` 생성, `docker compose ps`에서 두 컨테이너 Up(postgres healthy)·`pg_isready` 통과·`:18083` HTTP 200 재확인 완료.
 
-- **Task 002: `@repo/api` 공유 타입 + MQTT 토픽 헬퍼**
+- **Task 002: `@repo/api` 공유 타입 + MQTT 토픽 헬퍼** - 우선순위
   - 구현 담당: 인간 개발자
   - [ ] `packages/api/src/entry.ts` export 추가: `RobotDto`, `RobotStatus`(union), `RobotPart`(union 6값), `AuthUserDto`, `RegisterDto`, `LoginDto`, `RobotEventDto`
   - [ ] 토픽 헬퍼: `commandTopic(id, part)`, `stateTopic(id)`, `parseCommandTopic(topic)` — 순수 TS, `@nestjs/*` import 금지(`apps/web`도 소비)
