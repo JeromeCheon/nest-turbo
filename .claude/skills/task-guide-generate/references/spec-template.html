@@ -1,0 +1,341 @@
+<!--
+  Task 실행 스펙 템플릿 — task-guide-writer가 매번 이 파일을 시작점으로 삼는다.
+  CSS/골격은 docs/specs/task-002-repo-api-types-and-topics.spec.html에서 추출했다.
+  <!-- TEMPLATE: ... -->
+주석이 붙은 곳을 실제 내용으로 교체하고, 이 안내 주석 블록은 최종 산출물에서
+제거한다. 섹션 4개의 순서(개요 → 구조 → 필드 가이드 → 최종 결과)는 바꾸지
+않는다. -->
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><!-- TEMPLATE: Task 0NN — <한 줄 제목> --></title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --bg-alt: #f6f7f9;
+        --border: #e2e4e9;
+        --text: #1a1d23;
+        --text-dim: #5b6270;
+        --accent: #2f6fed;
+        --accent-bg: #eaf1ff;
+        --code-bg: #1e2128;
+        --code-text: #e6e8ef;
+        --ok: #1a7f4e;
+        --ok-bg: #e7f7ee;
+        --warn: #9a6700;
+        --warn-bg: #fff6e0;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14161a;
+          --bg-alt: #1b1e24;
+          --border: #2a2e37;
+          --text: #e7e9ee;
+          --text-dim: #9aa1b0;
+          --accent: #6ea0ff;
+          --accent-bg: #1c2740;
+          --code-bg: #0e0f12;
+          --code-text: #e6e8ef;
+          --ok: #6ddb9f;
+          --ok-bg: #123024;
+          --warn: #e3b559;
+          --warn-bg: #332a10;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Pretendard, sans-serif;
+        line-height: 1.6;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 40px 20px 80px;
+      }
+      header {
+        margin-bottom: 32px;
+      }
+      h1 {
+        font-size: 1.55rem;
+        margin: 0 0 6px;
+      }
+      .subtitle {
+        color: var(--text-dim);
+        font-size: 0.95rem;
+        margin: 0;
+      }
+      .meta {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+      .badge {
+        font-size: 0.78rem;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--accent-bg);
+        color: var(--accent);
+        border: 1px solid var(--accent);
+      }
+      h2 {
+        font-size: 1.05rem;
+        margin: 44px 0 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text);
+      }
+      h3 {
+        font-size: 0.95rem;
+        margin: 24px 0 8px;
+        color: var(--text);
+      }
+      p {
+        color: var(--text);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 12px 0 20px;
+        font-size: 0.88rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 9px 10px;
+        border: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        background: var(--bg-alt);
+        font-weight: 600;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        background: var(--bg-alt);
+        padding: 1px 5px;
+        border-radius: 4px;
+      }
+      pre {
+        background: var(--code-bg);
+        color: var(--code-text);
+        padding: 16px 18px;
+        border-radius: 10px;
+        overflow-x: auto;
+        font-size: 0.83rem;
+        line-height: 1.55;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+      }
+      .file-card {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin: 18px 0;
+        overflow: hidden;
+      }
+      .file-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-alt);
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--border);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85rem;
+      }
+      .file-head .path {
+        font-weight: 600;
+      }
+      .file-card pre {
+        border-radius: 0;
+        margin: 0;
+      }
+      .status {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 2px 8px;
+        border-radius: 5px;
+        text-transform: uppercase;
+      }
+      .status.new {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+      .status.modify {
+        background: var(--warn-bg);
+        color: var(--warn);
+      }
+      /* 디렉터리 트리는 반드시 <pre class="tree"> 안에 둔다 — <div>는 prettier 등
+     포맷터가 저장 시 내부 공백을 재배치해 트리를 깨뜨린다(Task 002 실사고). */
+      .tree {
+        background: var(--bg-alt);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.83rem;
+        color: var(--text-dim);
+        overflow-x: auto;
+      }
+      .tree .new {
+        color: var(--ok);
+        font-weight: 600;
+      }
+      .decision td:first-child {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .verdict {
+        border: 1px solid var(--ok);
+        background: var(--ok-bg);
+        color: var(--ok);
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 0.9rem;
+        margin: 10px 0 20px;
+      }
+      .verdict.warn {
+        border-color: var(--warn);
+        background: var(--warn-bg);
+        color: var(--warn);
+      }
+      .field-group {
+        margin: 20px 0 28px;
+      }
+      /* 최종 파일 결과: 네이티브 <details>로 기본 접힘. JS 불필요 */
+      details.file-card summary {
+        cursor: pointer;
+        list-style: none;
+      }
+      details.file-card summary::-webkit-details-marker {
+        display: none;
+      }
+      details.file-card summary .file-head::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 8px;
+        font-size: 0.7em;
+        transition: transform 0.15s ease;
+        color: var(--text-dim);
+      }
+      details.file-card[open] summary .file-head::before {
+        transform: rotate(90deg);
+      }
+      ol.steps li {
+        margin-bottom: 6px;
+      }
+      footer {
+        margin-top: 48px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--text-dim);
+        font-size: 0.82rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1><!-- TEMPLATE: Task 0NN — <한 줄 제목> --></h1>
+        <p class="subtitle"><!-- TEMPLATE: 한 줄 부제 (대상 패키지/모듈) --></p>
+        <div class="meta">
+          <!-- TEMPLATE: shrimp ID / 의존성 / 구현 담당 배지 -->
+          <span class="badge">구현 담당: 인간 개발자</span>
+        </div>
+      </header>
+
+      <!-- ============ 1. 작업 개요 (필수, 이 순서 유지) ============ -->
+      <h2>작업 개요</h2>
+      <p>
+        <!-- TEMPLATE: 목적 1~2문장 + 완료 기준. ROADMAP Task 블록에서 가져온다 -->
+      </p>
+
+      <!-- ============ 2. 필요한 파일 및 디렉토리 구조 (필수) ============ -->
+      <h2>필요한 파일 및 디렉토리 구조</h2>
+      <!-- 반드시 <pre class="tree">, <div> 금지. <code> 태그로 감싸도 된다 -->
+      <pre class="tree"><code><!-- TEMPLATE:
+packages/api/src/
+├── entry.ts                <span class="new">(수정)</span>
+└── ...
+--></code></pre>
+
+      <!-- ============ 3. 각 파일 필드 정의 및 가이드 (필수) ============ -->
+      <h2>필드 가이드</h2>
+      <p>
+        아래 파일별 완성 코드를 붙여넣기 전에, 각 타입의 필드가 무엇이고 왜 그
+        모양인지 먼저 훑어본다. 설명은 코드에 넣지 않는다 — 붙여넣을 파일에
+        불필요한 주석이 섞이지 않도록 이 섹션에만 둔다.
+      </p>
+      <div class="field-group">
+        <!-- TEMPLATE: 타입/파일 단위로 반복. 필드 표는 아래 구조 고정 -->
+        <h3>
+          <code><!-- 타입명 --></code>
+        </h3>
+        <table class="decision">
+          <tr>
+            <th>필드</th>
+            <th>타입</th>
+            <th>설명</th>
+          </tr>
+          <tr>
+            <td>
+              <code><!-- 필드명 --></code>
+            </td>
+            <td><!-- 타입 --></td>
+            <td>
+              <!--
+        PRD 근거 우선 인용. PRD가 침묵하면 "설계 결정"으로 표시하고 실제
+        효용·비용 비교를 적는다 — "정책이라서"만 쓰면 리뷰에서 REDO된다
+      -->
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- ============ 4. 최종 파일 결과 (필수, 기본 접힘) ============ -->
+      <h2>최종 파일 결과</h2>
+      <!-- 파일마다 details.file-card 하나. open 속성 넣지 않는다 = 기본 접힘 -->
+      <details class="file-card">
+        <summary>
+          <div class="file-head">
+            <span class="path"><!-- TEMPLATE: 파일 경로 --></span>
+            <span class="status new">신규</span>
+          </div>
+        </summary>
+        <pre><code><!-- TEMPLATE: 그대로 붙여넣기 가능한 완성 코드. 설명 주석 넣지 않는다 --></code></pre>
+      </details>
+
+      <h2>검증</h2>
+      <ol class="steps">
+        <li><!-- TEMPLATE: 파일 생성 단계 --></li>
+        <li><!-- TEMPLATE: 빌드/타입체크 명령 --></li>
+        <li>
+          완료되면 "Task 0NN 끝났어, 로드맵 갱신해줘"라고 요청 — `roadmap`
+          스킬이 검증 후 동기화
+        </li>
+      </ol>
+
+      <footer>
+        ROADMAP:
+        <!-- TEMPLATE: Task 0NN -->
+        · 기준 문서: <code>docs/PRD.md</code> · 생성: task-guide-generate 하네스
+      </footer>
+    </div>
+  </body>
+</html>
