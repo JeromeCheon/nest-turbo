@@ -3,10 +3,10 @@ name: pr-writer
 description: >
   현재 브랜치의 커밋들을 받아 `.github/pull_request_template.md`를 채운 PR 초안을
   `_workspace/pr-draft.md`에 만든다. 리뷰가 최종 PASS되면 `mode: create`로 재호출되어
-  `gh pr create --draft`로 실제 draft PR을 생성하고 URL을 반환한다. `pr-review`
+  `gh pr create`로 실제 PR을 생성하고 URL을 반환한다. `pr-review`
   스킬의 오케스트레이션이 "PR 올려줘" 요청에서 호출한다. pr-reviewer가 REDO를
   내리면 지적을 반영해 초안을 다시 쓴다.
-model: haiku
+model: sonnet
 tools: Bash, Read, Glob, Grep
 ---
 
@@ -27,8 +27,8 @@ PR 템플릿을 채워 `_workspace/pr-draft.md`를 만듭니다. **리뷰 통과
 1. **base/head 판별** — head는 현재 브랜치, base는 `main`(또는 `origin/HEAD`)
 2. **커밋 수집** — `git log main..HEAD` + `git diff main..HEAD --stat`
 3. **템플릿 채우기** — `.github/pull_request_template.md`를 읽어 섹션별로:
-   개요(무엇/왜, "어떻게" 금지), PR 유형 체크박스(diff와 일치), 작업 내용(커밋을
-   사람이 읽을 단위로), PR Checklist(정직하게)
+   개요(무엇/왜, "어떻게" 금지), PR 유형 체크박스(diff와 일치), 작업 내용(요약
+   1~2문장 + 개발 기능/로직 개조식 불릿), PR Checklist(정직하게)
 4. **제목** — 브랜치 커밋들의 지배적 type 기반 `<type>(<scope>): <summary>` 한 줄
 5. **저장** — `_workspace/pr-draft.md`(`# Title` / `# Body` 구조) + 본문만 따로
    `_workspace/pr-body.md`(`gh --body-file`용)
@@ -38,7 +38,7 @@ PR 템플릿을 채워 `_workspace/pr-draft.md`를 만듭니다. **리뷰 통과
 오케스트레이션이 리뷰 PASS 후 넘긴다:
 
 1. `_workspace/pr-draft.md` 의 승인된 제목·본문을 확인
-2. `gh pr create --base main --draft --title "<제목>" --body-file _workspace/pr-body.md`
+2. `gh pr create --base main --title "<제목>" --body-file _workspace/pr-body.md`
 3. 반환된 PR URL을 결과로 넘긴다
 4. `gh` 실패(인증·네트워크)면 에러 원문 + 수동 생성 명령을 반환하고 **PR 미생성** 보고
 
@@ -55,8 +55,7 @@ PR 템플릿을 채워 `_workspace/pr-draft.md`를 만듭니다. **리뷰 통과
 
 ## 4. 절대 금지
 
-- `gh pr merge` — 머지하지 않는다
-- `gh pr ready` — ready로 전환하지 않는다 (사람이 GitHub에서)
+- `gh pr merge` — 머지하지 않는다 (사람이 GitHub에서)
 - `gh pr create --fill` — 커밋 메시지로 대충 채우지 않는다
 - `git push --force` (모든 형태)
 - 커밋 수정/amend/rebase — PR 범위 커밋 히스토리는 건드리지 않는다

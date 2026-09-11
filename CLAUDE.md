@@ -108,7 +108,7 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 
 ## 하네스: github PR
 
-**목표:** 현재 브랜치의 커밋들을 `.github/pull_request_template.md` 기반 PR 초안으로 만들고(pr-writer), 루브릭 검증 + REDO 후(pr-reviewer), **최종 PASS일 때만** `gh`로 draft PR 생성.
+**목표:** 현재 브랜치의 커밋들을 `.github/pull_request_template.md` 기반 PR 초안으로 만들고(pr-writer), 루브릭 검증 + REDO 후(pr-reviewer), **최종 PASS일 때만** `gh`로 PR 생성(draft 아님).
 
 **트리거:** "PR 올려줘", "이 브랜치 PR 만들어줘", "풀리퀘" 등 요청 시 `pr-review` 스킬 사용. PR 목록 조회·머지·revert는 직접 처리.
 
