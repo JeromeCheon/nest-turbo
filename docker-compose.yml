@@ -1,0 +1,24 @@
+services:
+  emqx:
+    image: emqx/emqx:5.8.8
+    ports:
+      - '1883:1883'
+      - '8083:8083'
+      - '18083:18083'
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: robotops
+      POSTGRES_PASSWORD: robotops
+      POSTGRES_DB: robotops
+    volumes:
+      - robotops_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U robotops -d robotops']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+volumes:
+  robotops_pgdata:
