@@ -120,7 +120,19 @@ Task 또는 구현 사항을 `✅` / `- [x]`로 바꾸려면 **모두** 충족:
 `DATA_DIR=shrimp_data/`로 연결되어 있으면:
 
 - planner: ROADMAP의 각 Task를 `plan_task` → `split_tasks`로 등록
-- updater: 완료 Task를 `update_task`로 동기화. 조회는 `list_tasks`/`query_task`
+- updater: `list_tasks`/`query_task`로 로드맵 Task 제목·키워드에 대응하는
+  shrimp task를 찾는다. **`verify_task`는 대상 task가 `in_progress` 상태여야만
+  호출 가능** — `pending`이면 먼저 `execute_task(taskId)`로 전환한 뒤
+  `verify_task(taskId, score, summary)`를 호출한다. `update_task`에는 `status`
+  파라미터가 없어 상태를 바꿀 수 없다. 상태를 `completed`로 전환하는 유일한
+  경로는 `verify_task`이며, `score >= 80`이면 자동으로 완료 전환된다.
+  `update_task`는 완료 처리가 아니라 relatedFiles 등 부가 정보 수정에만 쓴다
+- `score`는 §5 완료 판정 기준을 모두 충족했을 때만 이 경로를 타므로 90으로
+  고정한다. `summary`(30자 이상 필수)는 ROADMAP에 적는 `> 변경 사항 요약`
+  문장을 재사용하고, 30자 미만이면 보강한다
+- 대응 shrimp task를 못 찾거나 `verify_task` 호출이 실패하면(dependencies
+  미완료 등) **`docs/ROADMAP.md` 갱신은 그대로 유지**하고 shrimp 동기화 실패
+  사실만 보고에 명시한다 — ROADMAP 완료 처리를 shrimp 실패로 되돌리지 않는다
 - **`docs/ROADMAP.md`와 shrimp task 목록을 항상 일치시킨다**
 - 미연결이면 `docs/ROADMAP.md`의 체크박스가 유일한 추적 수단
 
@@ -188,19 +200,20 @@ Task 또는 구현 사항을 `✅` / `- [x]`로 바꾸려면 **모두** 충족:
 
 - planner: 추가/변경된 Phase·Task, 지정된 우선순위, PRD 불일치·미결정 사항
 - updater: `✅` 처리된 항목, 검증 방법(실행 테스트·조회 심볼), 부분 완료·검증 불가
-  항목, 새 우선순위 Task
+  항목, 새 우선순위 Task, shrimp 동기화 결과(성공/실패, 대상 taskId)
 - 산출물 경로(`docs/ROADMAP.md`, 새 `docs/specs/*.spec.html`)를 명시
 - 파일 수정만 하고 커밋은 하지 않는다("커밋하려면 `commit` 스킬" 안내)
 
 ## 에러 핸들링
 
-| 상황                           | 대응                                                   |
-| ------------------------------ | ------------------------------------------------------ |
-| planner가 PRD 불완전 보고      | 부족 항목을 사용자에게 그대로 전달, 진행 중단          |
-| updater 테스트 실행 실패       | 해당 Task 완료 처리 안 함, "검증 불가" 사유 전달       |
-| 라우팅 애매(생성인지 갱신인지) | 사용자에게 한 줄 확인 후 진행                          |
-| 에이전트 1회 실패              | 1회 재호출. 재실패 시 부분 결과로 보고하고 미완료 명시 |
-| updater가 "새 Task 필요" 반환  | planner를 이어서 호출할지 사용자에게 확인              |
+| 상황                              | 대응                                                   |
+| --------------------------------- | ------------------------------------------------------ |
+| planner가 PRD 불완전 보고         | 부족 항목을 사용자에게 그대로 전달, 진행 중단          |
+| updater 테스트 실행 실패          | 해당 Task 완료 처리 안 함, "검증 불가" 사유 전달       |
+| 라우팅 애매(생성인지 갱신인지)    | 사용자에게 한 줄 확인 후 진행                          |
+| 에이전트 1회 실패                 | 1회 재호출. 재실패 시 부분 결과로 보고하고 미완료 명시 |
+| updater가 "새 Task 필요" 반환     | planner를 이어서 호출할지 사용자에게 확인              |
+| shrimp verify_task 실패/매칭 실패 | `docs/ROADMAP.md`는 완료 유지, 동기화 실패 사실만 보고 |
 
 ## 테스트 시나리오
 
@@ -217,6 +230,8 @@ Task 또는 구현 사항을 `✅` / `- [x]`로 바꾸려면 **모두** 충족:
 2. Phase 0 → updater 경로, 범위 = Task 001, `docs/ROADMAP.md` 존재 확인
 3. Phase 1b → roadmap-updater 호출 → Serena 조회 + `pnpm --filter api build` 실행
    → 수락 기준 충족 확인 → `✅ - 완료` + 변경 사항 요약 + Task 002에 `- 우선순위`
+   → `list_tasks`로 대응 shrimp task 검색 → `verify_task` 호출(`score: 90`) →
+   `completed` 전환 확인
 4. Phase 2 → 검증 불가 항목 없음
 5. Phase 3 → 완료 항목·검증 방법·새 우선순위 보고
 
