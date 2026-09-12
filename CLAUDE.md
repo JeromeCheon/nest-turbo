@@ -30,7 +30,7 @@ pnpm --filter web check-types                 # tsc --noEmit
 pnpm --filter @repo/api build                 # tsc -b — @repo/api 수정 후 필수 (Gotchas 참고)
 
 # 단일 테스트 (apps/api: ts-jest, src/**/*.spec.ts 만)
-pnpm --filter api exec jest src/links/links.service.spec.ts
+pnpm --filter api exec jest src/app.controller.spec.ts
 pnpm --filter api exec jest -t "테스트 이름 패턴"
 ```
 
@@ -50,11 +50,11 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 | `packages/typescript-config` | `nestjs.json` / `nextjs.json` base tsconfig                                                                                    |
 | `packages/ui` (`@repo/ui`)   | 스텁 React 컴포넌트 (`./src/*.tsx` 직접 export, 빌드 없음)                                                                     |
 
-`@repo/api`는 `apps/api`와 `apps/web` 양쪽에서 import되는 **타입 계약의 단일 출처**다. web 서버 컴포넌트가 이 타입으로 api 응답을 받고(`apps/web/app/page.tsx` → `http://localhost:3000/links` fetch), api controller/service가 같은 DTO를 쓴다.
+`@repo/api`는 `apps/api`와 `apps/web` 양쪽에서 import되는 **타입 계약의 단일 출처**다. 향후 web 컴포넌트가 이 타입으로 api 응답을 받고, api controller/service가 같은 DTO를 쓴다.
 
 ### 현재 상태 vs 목표
 
-- **현재**: `create-turbo -e with-nestjs` 스타터 거의 그대로. `apps/api/src/links`는 인메모리 배열 + `TODO:` 문자열 스텁 데모, `apps/web`은 스타터 랜딩 페이지.
+- **현재**: `create-turbo -e with-nestjs` 스타터에서 `links` 데모 모듈 제거 완료, `apps/web`은 스타터 랜딩 페이지.
 - **목표**: `docs/PRD.md` — "로봇 운영 실습 시스템"(상태 Approved, 브랜치 `init-robot-management`). 확장 방향:
   - `apps/api/src/{auth,robots}/` — **NestJS 4-layer DDD**: Controller → `application/`(UseCase) → `domain/`(entity·VO·repository interface·port) → `infrastructure/`(Prisma repo, adapter)
   - Prisma + PostgreSQL (`prisma migrate`) — `User` / `Session` / `Robot` / `RobotEvent`. 로컬은 `docker-compose.yml`의 `postgres:17-alpine` 컨테이너 (`DATABASE_URL=postgresql://...`)
@@ -76,7 +76,7 @@ Turborepo + pnpm 워크스페이스 (`apps/*`, `packages/*`).
 - **`@repo/api` 수정 후 재빌드 필수.** 소비 측이 `dist/`를 보므로 `pnpm --filter @repo/api build`(또는 `... dev` 워치) 없이는 옛 타입/코드가 잡힌다. `pnpm dev`는 turbo가 의존 그래프상 함께 띄운다.
 - **CORS + 쿠키 인증**: `apps/api/src/main.ts`는 현재 `app.enableCors()`(전체 허용). 쿠키 인증을 붙이면 `enableCors({ origin: 'http://localhost:3001', credentials: true })`로 바꿔야 한다 — `*` + credentials는 브라우저가 거부.
 - **Prisma**: PRD상 `apps/api`의 `build`·`postinstall`에 `prisma generate`를 추가해야 fresh clone `pnpm build`가 안 깨진다 (아직 미적용).
-- 포트: api 3000, web 3001. `apps/web/app/page.tsx`가 api를 `localhost:3000`으로 하드코딩 fetch.
+- 포트: api 3000, web 3001.
 - 루트 `.env.local`의 `SLACK_WEBHOOK_URL`은 앱 설정이 아니라 `.claude/hooks/slack-notify.py`(Stop·권한요청 → Slack) 전용. `python3 .claude/hooks/slack-notify.py --selftest`로 검증.
 - 루트 `.eslintrc.mjs`는 레거시(`apps/**`·`packages/**` 무시). 실제 lint는 각 워크스페이스의 flat config `eslint.config.mjs`.
 
