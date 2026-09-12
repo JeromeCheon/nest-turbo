@@ -35,13 +35,14 @@
   - 완료 기준: `docker compose up -d` → EMQX 대시보드 `:18083` 접속 + `pg_isready` 통과
     > 변경 사항 요약: `docker-compose.yml`(emqx 5.8.8 + postgres:17-alpine healthcheck) + 양쪽 `.env.example` 생성, `docker compose ps`에서 두 컨테이너 Up(postgres healthy)·`pg_isready` 통과·`:18083` HTTP 200 재확인 완료.
 
-- **Task 002: `@repo/api` 공유 타입 + MQTT 토픽 헬퍼** - 우선순위
+- **Task 002: `@repo/api` 공유 타입 + MQTT 토픽 헬퍼** ✅ - 완료
   - 구현 담당: 인간 개발자
-  - [ ] `packages/api/src/entry.ts` export 추가: `RobotDto`, `RobotStatus`(union), `RobotPart`(union 6값), `AuthUserDto`, `RegisterDto`, `LoginDto`, `RobotEventDto`
-  - [ ] 토픽 헬퍼: `commandTopic(id, part)`, `stateTopic(id)`, `parseCommandTopic(topic)` — 순수 TS, `@nestjs/*` import 금지(`apps/web`도 소비)
+  - [x] `packages/api/src/entry.ts` export 추가: `RobotDto`, `RobotStatus`(union), `RobotPart`(union 6값), `AuthUserDto`, `RegisterDto`, `LoginDto`, `RobotEventDto`
+  - [x] 토픽 헬퍼: `commandTopic(id, part)`, `stateTopic(id)`, `parseCommandTopic(topic)` — 순수 TS, `@nestjs/*` import 금지(`apps/web`도 소비)
   - 완료 기준: `pnpm --filter @repo/api build` 통과(소비 측이 `dist/`를 봄)
+    > 변경 사항 요약: `packages/api/src/entry.ts`에 7종 DTO/union 타입 export, `packages/api/src/mqtt/topics.ts`에 `commandTopic`/`stateTopic`/`parseCommandTopic`(`@nestjs/*` 미의존) 구현. `pnpm --filter @repo/api build` 재확인 및 `dist/` 산출물에 반영됨을 확인.
 
-- **Task 003: NestJS 모듈 골격 + Prisma 스키마 + 응답 봉투**
+- **Task 003: NestJS 모듈 골격 + Prisma 스키마 + 응답 봉투** - 우선순위
   - 구현 담당: 인간 개발자 · AI 산출물: 단위 테스트 골격(`common/*.spec.ts`)
   - [ ] `apps/api/src/{common,prisma,auth,robots,mqtt}` 디렉터리 + 빈 모듈/컨트롤러, `app.module.ts` 와이어링
   - [ ] `common/response.interceptor.ts`(성공 → `{ success:true, data, error:null }`), `common/all-exceptions.filter.ts`(예외 → `{ success:false, data:null, error:{ code, message } }`; class-validator → `code:"VALIDATION"`, 도메인 예외 → `code`: 클래스명 UPPER_SNAKE), `common/current-user.decorator.ts`
