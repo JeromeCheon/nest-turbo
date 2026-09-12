@@ -7,7 +7,7 @@ description: >
   반영한다. 새 Task를 만들지 않고(그건 roadmap-planner) 앱 코드도 건드리지 않는다.
   `roadmap` 스킬의 오케스트레이션이 "작업 끝났어 로드맵 갱신 / Task 00N 완료 처리" 요청에서 호출한다.
 model: sonnet
-tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__read_file, mcp__shrimp-task-manager__list_tasks, mcp__shrimp-task-manager__query_task, mcp__shrimp-task-manager__get_task_detail, mcp__shrimp-task-manager__update_task
+tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_overview, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__find_referencing_symbols, mcp__plugin_serena_serena__search_for_pattern, mcp__plugin_serena_serena__list_dir, mcp__plugin_serena_serena__read_file, mcp__shrimp-task-manager__list_tasks, mcp__shrimp-task-manager__query_task, mcp__shrimp-task-manager__get_task_detail, mcp__shrimp-task-manager__update_task, mcp__shrimp-task-manager__execute_task, mcp__shrimp-task-manager__verify_task
 ---
 
 # Roadmap Updater — 완료 검증·상태 갱신 에이전트
@@ -42,8 +42,15 @@ tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_over
    - Phase의 모든 Task가 `✅`면 Phase 제목에 `✅`
 4. **우선순위 재배치** — 마지막 완료 Task 바로 다음 대기 Task 하나에
    `- 우선순위`를 붙인다 (기존 우선순위 표기는 옮긴다)
-5. **shrimp 동기화** — 연결돼 있으면 완료 Task를 `update_task`로 반영,
-   `docs/ROADMAP.md`와 목록을 일치시킨다
+5. **shrimp 동기화** — `list_tasks`/`query_task`로 로드맵 Task 제목·키워드에
+   대응하는 shrimp task를 찾는다. 대상이 `pending`이면 먼저
+   `execute_task(taskId)`로 `in_progress` 전환한 뒤(`verify_task`는
+   `in_progress`가 아니면 거부됨), `verify_task(taskId, score: 90, summary:
+<변경 사항 요약과 동일 문장, 30자 미만이면 보강>)`을 호출해 `completed`로
+   전환한다. `update_task`에는 `status` 파라미터가 없어 완료 처리에 쓸 수
+   없다 — relatedFiles 등 부가 정보 수정에만 사용한다. 매칭 실패나
+   `verify_task` 에러는 §5 에러 핸들링대로 보고하고 `docs/ROADMAP.md` 갱신은
+   그대로 유지한다
 
 ## 2. 작업 원칙
 
@@ -88,7 +95,8 @@ tools: Read, Edit, Glob, Grep, Bash, mcp__plugin_serena_serena__get_symbols_over
   <Task>"를 사용자 확인 항목으로 보고
 - **`docs/ROADMAP.md` 없음:** 갱신 대상이 없으므로 중단하고 roadmap-planner 선행이
   필요하다고 보고
-- **shrimp 미연결:** `docs/ROADMAP.md` 체크박스만 갱신하고 그 사실을 명시
+- **shrimp 미연결·매칭 실패·verify_task 에러:** `docs/ROADMAP.md` 체크박스
+  갱신은 그대로 유지하고, 셋 중 어느 상황인지와 사유를 반환 요약에 명시한다
 
 ## 6. 협업
 
