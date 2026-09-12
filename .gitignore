@@ -66,6 +66,8 @@ shrimp_data/
 
 # mcp
 .mcp.json
+.serena/
+.playwright-mcp/
 
 # claude code local settings
 .claude/settings.local.json
