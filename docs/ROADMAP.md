@@ -42,15 +42,16 @@
   - 완료 기준: `pnpm --filter @repo/api build` 통과(소비 측이 `dist/`를 봄)
     > 변경 사항 요약: `packages/api/src/entry.ts`에 7종 DTO/union 타입 export, `packages/api/src/mqtt/topics.ts`에 `commandTopic`/`stateTopic`/`parseCommandTopic`(`@nestjs/*` 미의존) 구현. `pnpm --filter @repo/api build` 재확인 및 `dist/` 산출물에 반영됨을 확인.
 
-- **Task 003: NestJS 모듈 골격 + Prisma 스키마 + 응답 봉투** - 우선순위
+- **Task 003: NestJS 모듈 골격 + Prisma 스키마 + 응답 봉투** ✅ - 완료
   - 구현 담당: 인간 개발자 · AI 산출물: 단위 테스트 골격(`common/*.spec.ts`)
-  - [ ] `apps/api/src/{common,prisma,auth,robots,mqtt}` 디렉터리 + 빈 모듈/컨트롤러, `app.module.ts` 와이어링
-  - [ ] `common/response.interceptor.ts`(성공 → `{ success:true, data, error:null }`), `common/all-exceptions.filter.ts`(예외 → `{ success:false, data:null, error:{ code, message } }`; class-validator → `code:"VALIDATION"`, 도메인 예외 → `code`: 클래스명 UPPER_SNAKE), `common/current-user.decorator.ts`
-  - [ ] `apps/api/prisma/schema.prisma`: `datasource db { provider = "postgresql" }` + 모델 `User` / `Session` / `Robot` / `RobotEvent`(PRD §6). 마이그레이션 실행은 Phase 3
-  - [ ] `apps/api/package.json`: `build`를 `prisma generate && nest build`로, `postinstall`에 `prisma generate` 추가
+  - [x] `apps/api/src/{common,auth,robots}` 디렉터리 + 빈 모듈/컨트롤러, `app.module.ts` 와이어링(`prisma`/`mqtt` 디렉터리는 설계 결정에 따라 Task 009/012로 이월)
+  - [x] `common/response.interceptor.ts`(성공 → `{ success:true, data, error:null }`), `common/all-exceptions.filter.ts`(예외 → `{ success:false, data:null, error:{ code, message } }`; class-validator → `code:"VALIDATION"`, 도메인 예외 → `code`: 클래스명 UPPER_SNAKE), `common/current-user.decorator.ts`
+  - [x] `apps/api/prisma/schema.prisma`: `datasource db { provider = "postgresql" }` + 모델 `User` / `Session` / `Robot` / `RobotEvent`(PRD §6). 마이그레이션 실행은 Phase 3
+  - [x] `apps/api/package.json`: `build`를 `prisma generate && nest build`로, `postinstall`에 `prisma generate` 추가
   - 완료 기준: `pnpm --filter api build` 통과(Prisma Client 생성 포함), 앱 부팅 시 라우트 목록에 빈 컨트롤러 노출
+    > 변경 사항 요약: `common/{response.interceptor,all-exceptions.filter,domain.exception,current-user.decorator}.ts` + `envelope.spec.ts`(5개 통과), `auth`/`robots` 모듈·컨트롤러(`GET /auth/me`, `GET /robots` → 501) 배선, `prisma/schema.prisma`에 4개 모델, `package.json` build/postinstall에 `prisma generate` 반영. `pnpm --filter api build` 재확인(Prisma Client 생성 포함), 부팅 후 `/`·`/auth/me`·`/robots` 라우트와 성공/에러 봉투 응답 curl로 직접 확인.
 
-- **Task 004: 프론트 스캐폴딩 + 라우트 골격**
+- **Task 004: 프론트 스캐폴딩 + 라우트 골격** - 우선순위
   - 구현 담당: 프론트 전담 서브에이전트 · **의존성 설치는 인간 개발자**
   - [ ] Tailwind v4(`@tailwindcss/postcss`) + shadcn/ui `init`
   - [ ] 스타터 잔재 정리: `app/page.module.css` 삭제, `app/globals.css` → Tailwind 지시문, `layout.tsx`의 `localFont`/`metadata` 정리
@@ -59,7 +60,7 @@
 
 ### Phase 2: UI/UX 완성 (더미 데이터)
 
-- **Task 005: 공통 컴포넌트 라이브러리** - 우선순위
+- **Task 005: 공통 컴포넌트 라이브러리**
   - 구현 담당: 프론트 전담 서브에이전트
   - [ ] 상태 배지(`idle` / `active` / `error` / `offline`), 라이브 로그 패널(최근 50건), 연결 상태 인디케이터(`connected` / `connecting` / `disconnected`)
   - [ ] `<HumanoidRobot />` 인라인 SVG — 6부위 클릭 대상(`data-part`: `eyeLeft` `eyeRight` `armLeft` `armRight` `legLeft` `legRight`), hover 하이라이트, 클릭 반짝임(CSS)
@@ -163,6 +164,6 @@
 ## 미결정 / PRD 열린 질문 (착수 전 확인)
 
 - 구독 어댑터를 `mqtt/` 공용 클라이언트에 붙일지, `robots` 전용 클라이언트를 둘지 — 전자 권장 (Task 012)
-- 기존 `links` 데모 모듈 유지/삭제 — 기능 영향 없음, Task 003에서 결정
+- ~~기존 `links` 데모 모듈 유지/삭제~~ — **삭제로 결정**(Task 003, 커밋 `100caf5`)
 - auto-idle 타이머는 API 인스턴스 1개 전제 — 다중 인스턴스 필요 시 `@nestjs/schedule`/큐로 승격 (범위 밖)
 - EMQX authn/ACL — 실습용 익명 허용, 후속 과제
