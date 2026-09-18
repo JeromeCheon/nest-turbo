@@ -68,14 +68,15 @@
   - 완료 기준: Storybook 없이 임시 페이지에서 6부위 클릭 이벤트 확인, 반응형/다크모드 토큰 적용
     > 변경 사항 요약: `status-badge.tsx`/`connection-indicator.tsx`/`live-log-panel.tsx`/`humanoid-robot.tsx`(6부위 SVG, `@repo/api`의 `RobotStatus`/`RobotPart` 타입 사용) + `globals.css`에 `--animate-flash` 키프레임 추가, `/dev/components` 임시 페이지로 조합 검증. `pnpm --filter web check-types`/`lint` 통과, Playwright로 6부위 클릭→로그 6건·반짝임·`disconnected` 시 클릭 차단·375px 반응형·콘솔 에러 0건 확인, 다크모드는 전 컴포넌트 semantic 토큰만 사용해 정적 검증.
 
-- **Task 006: 인증 페이지 UI (더미)** - 우선순위
+- **Task 006: 인증 페이지 UI (더미)** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트
-  - [ ] `/register` `/login`: React Hook Form + Zod + shadcn `Form`
-  - [ ] 에러 렌더(이메일 중복 / 비밀번호 불일치 / 네트워크) — 폼 상단 또는 필드
-  - [ ] 제출 성공(더미: 항상 성공) → `/dashboard` 리다이렉트
+  - [x] `/register` `/login`: React Hook Form + Zod + shadcn `Form`
+  - [x] 에러 렌더(이메일 중복 / 비밀번호 불일치 / 네트워크) — 폼 상단 또는 필드
+  - [x] 제출 성공(더미: 항상 성공) → `/dashboard` 리다이렉트
   - 완료 기준: 유효성 검증 메시지 노출, 제출 중 버튼 disabled
+    > 변경 사항 요약: `components/ui/form.tsx`(radix-ui 미사용, `React.cloneElement` 기반 `FormControl`) + `lib/auth-schemas.ts`(Zod v4 `z.email()` 기반 `loginSchema`/`registerSchema`+refine) + `lib/dummy-auth.ts`(중복 이메일/오답 비밀번호/네트워크 오류 상수 + 더미 세션 쿠키) 신규, `/login` `/register`를 RHF+Zod+shadcn Form으로 전면 교체. `pnpm --filter web check-types`/`lint` 통과, Playwright로 빈 폼 필드 에러·네트워크 오류/오답 비밀번호 root 배너·이메일 중복 필드 에러·비밀번호 불일치 refine 에러·정상 제출 시 `/dashboard` 리다이렉트(로그인 루프 없음) 6개 시나리오 확인, 콘솔 에러 0건.
 
-- **Task 007: 대시보드 UI (더미)**
+- **Task 007: 대시보드 UI (더미)** - 우선순위
   - 구현 담당: 프론트 전담 서브에이전트
   - [ ] 리스트/카드 뷰 토글 — Zustand + `localStorage` 지속
   - [ ] 로봇별 상태 배지, 카드 클릭 → `/robots/[id]`
