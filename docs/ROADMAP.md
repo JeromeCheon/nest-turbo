@@ -25,7 +25,7 @@
 
 ## 개발 단계
 
-### Phase 1: 골격 + 공유 계약 구축
+### Phase 1: 골격 + 공유 계약 구축 ✅
 
 - **Task 001: 인프라 컨테이너 + 환경변수** ✅ - 완료
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-001-infra.spec.html`(요청 시)
@@ -51,16 +51,17 @@
   - 완료 기준: `pnpm --filter api build` 통과(Prisma Client 생성 포함), 앱 부팅 시 라우트 목록에 빈 컨트롤러 노출
     > 변경 사항 요약: `common/{response.interceptor,all-exceptions.filter,domain.exception,current-user.decorator}.ts` + `envelope.spec.ts`(5개 통과), `auth`/`robots` 모듈·컨트롤러(`GET /auth/me`, `GET /robots` → 501) 배선, `prisma/schema.prisma`에 4개 모델, `package.json` build/postinstall에 `prisma generate` 반영. `pnpm --filter api build` 재확인(Prisma Client 생성 포함), 부팅 후 `/`·`/auth/me`·`/robots` 라우트와 성공/에러 봉투 응답 curl로 직접 확인.
 
-- **Task 004: 프론트 스캐폴딩 + 라우트 골격** - 우선순위
+- **Task 004: 프론트 스캐폴딩 + 라우트 골격** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트 · **의존성 설치는 인간 개발자**
-  - [ ] Tailwind v4(`@tailwindcss/postcss`) + shadcn/ui `init`
-  - [ ] 스타터 잔재 정리: `app/page.module.css` 삭제, `app/globals.css` → Tailwind 지시문, `layout.tsx`의 `localFont`/`metadata` 정리
-  - [ ] App Router 빈 페이지: `/register` `/login` `/dashboard` `/robots/[id]`, `middleware.ts` 골격(`access_token` 쿠키 확인 → 없으면 `/login`)
+  - [x] Tailwind v4(`@tailwindcss/postcss`) + shadcn/ui `init`
+  - [x] 스타터 잔재 정리: `app/page.module.css` 삭제, `app/globals.css` → Tailwind 지시문, `layout.tsx`의 `localFont`/`metadata` 정리
+  - [x] App Router 빈 페이지: `/register` `/login` `/dashboard` `/robots/[id]`, `middleware.ts` 골격(`access_token` 쿠키 확인 → 없으면 `/login`)
   - 완료 기준: `pnpm --filter web dev` 기동, 4개 라우트 200, `pnpm --filter web check-types` 통과
+    > 변경 사항 요약: `layout.tsx`(Inter+`cn`, `localFont`/metadata 정리), `globals.css`/`page.tsx` 스타터 잔재 제거, `/register` `/login` `/dashboard` `/robots/[id]` 빈 라우트, `middleware.ts`(access_token 쿠키 없으면 `/login` 리다이렉트) 구현. `pnpm --filter web dev` 기동 후 `/`·`/login`·`/register` 200, `/dashboard`·`/robots/[id]`는 쿠키 없이 307·쿠키 있을 시 200 확인, `pnpm --filter web check-types` 통과 재확인.
 
 ### Phase 2: UI/UX 완성 (더미 데이터)
 
-- **Task 005: 공통 컴포넌트 라이브러리**
+- **Task 005: 공통 컴포넌트 라이브러리** - 우선순위
   - 구현 담당: 프론트 전담 서브에이전트
   - [ ] 상태 배지(`idle` / `active` / `error` / `offline`), 라이브 로그 패널(최근 50건), 연결 상태 인디케이터(`connected` / `connecting` / `disconnected`)
   - [ ] `<HumanoidRobot />` 인라인 SVG — 6부위 클릭 대상(`data-part`: `eyeLeft` `eyeRight` `armLeft` `armRight` `legLeft` `legRight`), hover 하이라이트, 클릭 반짝임(CSS)
