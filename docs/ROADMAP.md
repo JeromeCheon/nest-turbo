@@ -61,13 +61,14 @@
 
 ### Phase 2: UI/UX 완성 (더미 데이터)
 
-- **Task 005: 공통 컴포넌트 라이브러리** - 우선순위
+- **Task 005: 공통 컴포넌트 라이브러리** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트
-  - [ ] 상태 배지(`idle` / `active` / `error` / `offline`), 라이브 로그 패널(최근 50건), 연결 상태 인디케이터(`connected` / `connecting` / `disconnected`)
-  - [ ] `<HumanoidRobot />` 인라인 SVG — 6부위 클릭 대상(`data-part`: `eyeLeft` `eyeRight` `armLeft` `armRight` `legLeft` `legRight`), hover 하이라이트, 클릭 반짝임(CSS)
+  - [x] 상태 배지(`idle` / `active` / `error` / `offline`), 라이브 로그 패널(최근 50건), 연결 상태 인디케이터(`connected` / `connecting` / `disconnected`)
+  - [x] `<HumanoidRobot />` 인라인 SVG — 6부위 클릭 대상(`data-part`: `eyeLeft` `eyeRight` `armLeft` `armRight` `legLeft` `legRight`), hover 하이라이트, 클릭 반짝임(CSS)
   - 완료 기준: Storybook 없이 임시 페이지에서 6부위 클릭 이벤트 확인, 반응형/다크모드 토큰 적용
+    > 변경 사항 요약: `status-badge.tsx`/`connection-indicator.tsx`/`live-log-panel.tsx`/`humanoid-robot.tsx`(6부위 SVG, `@repo/api`의 `RobotStatus`/`RobotPart` 타입 사용) + `globals.css`에 `--animate-flash` 키프레임 추가, `/dev/components` 임시 페이지로 조합 검증. `pnpm --filter web check-types`/`lint` 통과, Playwright로 6부위 클릭→로그 6건·반짝임·`disconnected` 시 클릭 차단·375px 반응형·콘솔 에러 0건 확인, 다크모드는 전 컴포넌트 semantic 토큰만 사용해 정적 검증.
 
-- **Task 006: 인증 페이지 UI (더미)**
+- **Task 006: 인증 페이지 UI (더미)** - 우선순위
   - 구현 담당: 프론트 전담 서브에이전트
   - [ ] `/register` `/login`: React Hook Form + Zod + shadcn `Form`
   - [ ] 에러 렌더(이메일 중복 / 비밀번호 불일치 / 네트워크) — 폼 상단 또는 필드
