@@ -59,7 +59,7 @@
   - 완료 기준: `pnpm --filter web dev` 기동, 4개 라우트 200, `pnpm --filter web check-types` 통과
     > 변경 사항 요약: `layout.tsx`(Inter+`cn`, `localFont`/metadata 정리), `globals.css`/`page.tsx` 스타터 잔재 제거, `/register` `/login` `/dashboard` `/robots/[id]` 빈 라우트, `middleware.ts`(access_token 쿠키 없으면 `/login` 리다이렉트) 구현. `pnpm --filter web dev` 기동 후 `/`·`/login`·`/register` 200, `/dashboard`·`/robots/[id]`는 쿠키 없이 307·쿠키 있을 시 200 확인, `pnpm --filter web check-types` 통과 재확인.
 
-### Phase 2: UI/UX 완성 (더미 데이터)
+### Phase 2: UI/UX 완성 (더미 데이터) ✅
 
 - **Task 005: 공통 컴포넌트 라이브러리** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트
@@ -85,12 +85,13 @@
   - 완료 기준: 하드코딩 더미 목록으로 두 뷰 전환·등록 UX 완결
     > 변경 사항 요약: `lib/dummy-robots.ts`(`RobotDto[]` 6개, 4개 상태 커버) + `lib/robot-schemas.ts`(zod `registerRobotSchema`) + `lib/robot-store.ts`(zustand `persist`, `viewMode`만 localStorage 지속) 신규, `components/ui/{dialog,skeleton}.tsx`(`@base-ui/react` 직접 구현) + `robot-register-dialog.tsx`/`robot-view.tsx` 신규, `/dashboard`를 카드/리스트 토글+등록 Dialog+로딩 스켈레톤으로 전면 구현. `pnpm --filter web check-types`/`lint` 재확인 통과, Playwright로 6개 로봇 카드/리스트 렌더+뷰 전환 localStorage 지속+`/robots/[id]` 이동+등록 폼 정상 제출/유효성 에러+제출 중 버튼 disabled 확인, 콘솔 에러 0건.
 
-- **Task 008: 로봇 상세 UI (더미, MQTT 미연동)** - 우선순위
+- **Task 008: 로봇 상세 UI (더미, MQTT 미연동)** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트
-  - [ ] `<HumanoidRobot />` 배치, 6부위 클릭 시 로그 패널에 더미 메시지 append + 반짝임
-  - [ ] 연결 상태 인디케이터(더미 고정), EMQX 대시보드 링크
-  - [ ] 더미 목록에 없는 `id` → `notFound()`
+  - [x] `<HumanoidRobot />` 배치, 6부위 클릭 시 로그 패널에 더미 메시지 append + 반짝임
+  - [x] 연결 상태 인디케이터(더미 고정), EMQX 대시보드 링크
+  - [x] 더미 목록에 없는 `id` → `notFound()`
   - 완료 기준: 클릭 → 반짝 → 로그 흐름이 더미로 완결, 사용자 플로우 검증
+    > 변경 사항 요약: `robot-detail-view.tsx`(신규, `RobotDto` 프롭 클라이언트 컴포넌트, `activePart`/`entries` 로컬 상태로 클릭→반짝임→로그 흐름, `StatusBadge`/`ConnectionIndicator(connected 고정)`/EMQX 대시보드 링크 재사용) + `app/robots/[id]/page.tsx`(더미 목록 조회 후 없으면 `notFound()`) 구현. `pnpm --filter web check-types`/`lint` 통과, Playwright로 `/robots/r-1` 헤더(이름/모델/상태 배지/연결 인디케이터/EMQX 링크 target="\_blank")·6부위 순차 클릭 시 로그 순서대로 append·`data-active`+`animate-flash` 배선 확인, `/robots/does-not-exist` 404 `notFound()` 렌더 확인, 콘솔 에러 0건.
 
 ### Phase 3: 핵심 기능 구현
 
