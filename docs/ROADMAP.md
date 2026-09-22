@@ -94,15 +94,16 @@
 
 ### Phase 3: 핵심 기능 구현
 
-- **Task 009: Prisma 마이그레이션 + `PrismaService`** - 우선순위
+- **Task 009: Prisma 마이그레이션 + `PrismaService`** ✅ - 완료
   - 구현 담당: 인간 개발자
-  - [ ] Postgres 컨테이너 기동 후 `pnpm --filter api exec prisma migrate dev` — 4개 테이블 생성
-  - [ ] `PrismaService`(`OnModuleInit` connect / `OnModuleDestroy` disconnect), 도메인 repository 인터페이스 ↔ Prisma 구현 배선 지점 확보
+  - [x] Postgres 컨테이너 기동 후 `pnpm --filter api exec prisma migrate dev` — 4개 테이블 생성
+  - [x] `PrismaService`(`OnModuleInit` connect / `OnModuleDestroy` disconnect), 도메인 repository 인터페이스 ↔ Prisma 구현 배선 지점 확보
   - 테스트 체크리스트:
-    - [ ] `prisma studio`로 테이블·컬럼 확인
-    - [ ] 컨테이너 재시작 후 데이터 유지(명명 볼륨)
+    - [x] `prisma studio`로 테이블·컬럼 확인
+    - [x] 컨테이너 재시작 후 데이터 유지(명명 볼륨)
+      > 변경 사항 요약: `apps/api/prisma/migrations/20260918064512_init/`에 User/Session/Robot/RobotEvent 4개 테이블 + FK/유니크 인덱스 마이그레이션, `PrismaService`(`OnModuleInit`→`$connect`/`OnModuleDestroy`→`$disconnect`)+`@Global` `PrismaModule` 구현 후 `app.module.ts` 등록, `main.ts`에 `enableShutdownHooks()` 추가. `pnpm --filter api build`(prisma generate 포함)·`pnpm --filter api exec jest src/prisma/prisma.service.spec.ts`·`pnpm --filter api exec prisma migrate status`("Database schema is up to date!", `nest-turbo-postgres-1` healthy) 재확인 완료.
 
-- **Task 010: `auth` 모듈 (4-layer DDD)**
+- **Task 010: `auth` 모듈 (4-layer DDD)** - 우선순위
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-010-auth.spec.html` + 단위 테스트 골격
   - [ ] `domain/`: `User`(`verifyPassword`), `Session`(`isActive` / `revoke` / `rotate`), `Email`·`PasswordHash` VO, `UserRepository`·`SessionRepository` interface, `PasswordHasher`·`TokenService` port
   - [ ] `application/`: `RegisterUserUseCase`(+ 로봇 3개 시드), `LoginUseCase`, `RefreshSessionUseCase`, `LogoutUseCase`, `GetMeUseCase`
