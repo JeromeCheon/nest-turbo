@@ -11,6 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.useGlobalFilters(new AllExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
+  app.enableShutdownHooks();
 
   await app.listen(3000);
 }
