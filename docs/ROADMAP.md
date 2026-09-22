@@ -76,15 +76,16 @@
   - 완료 기준: 유효성 검증 메시지 노출, 제출 중 버튼 disabled
     > 변경 사항 요약: `components/ui/form.tsx`(radix-ui 미사용, `React.cloneElement` 기반 `FormControl`) + `lib/auth-schemas.ts`(Zod v4 `z.email()` 기반 `loginSchema`/`registerSchema`+refine) + `lib/dummy-auth.ts`(중복 이메일/오답 비밀번호/네트워크 오류 상수 + 더미 세션 쿠키) 신규, `/login` `/register`를 RHF+Zod+shadcn Form으로 전면 교체. `pnpm --filter web check-types`/`lint` 통과, Playwright로 빈 폼 필드 에러·네트워크 오류/오답 비밀번호 root 배너·이메일 중복 필드 에러·비밀번호 불일치 refine 에러·정상 제출 시 `/dashboard` 리다이렉트(로그인 루프 없음) 6개 시나리오 확인, 콘솔 에러 0건.
 
-- **Task 007: 대시보드 UI (더미)** - 우선순위
+- **Task 007: 대시보드 UI (더미)** ✅ - 완료
   - 구현 담당: 프론트 전담 서브에이전트
-  - [ ] 리스트/카드 뷰 토글 — Zustand + `localStorage` 지속
-  - [ ] 로봇별 상태 배지, 카드 클릭 → `/robots/[id]`
-  - [ ] "로봇 등록" shadcn `Dialog` + 폼(더미: 로컬 상태에 추가)
-  - [ ] 로딩 스켈레톤, Dialog 제출 중 버튼 disabled
+  - [x] 리스트/카드 뷰 토글 — Zustand + `localStorage` 지속
+  - [x] 로봇별 상태 배지, 카드 클릭 → `/robots/[id]`
+  - [x] "로봇 등록" shadcn `Dialog` + 폼(더미: 로컬 상태에 추가)
+  - [x] 로딩 스켈레톤, Dialog 제출 중 버튼 disabled
   - 완료 기준: 하드코딩 더미 목록으로 두 뷰 전환·등록 UX 완결
+    > 변경 사항 요약: `lib/dummy-robots.ts`(`RobotDto[]` 6개, 4개 상태 커버) + `lib/robot-schemas.ts`(zod `registerRobotSchema`) + `lib/robot-store.ts`(zustand `persist`, `viewMode`만 localStorage 지속) 신규, `components/ui/{dialog,skeleton}.tsx`(`@base-ui/react` 직접 구현) + `robot-register-dialog.tsx`/`robot-view.tsx` 신규, `/dashboard`를 카드/리스트 토글+등록 Dialog+로딩 스켈레톤으로 전면 구현. `pnpm --filter web check-types`/`lint` 재확인 통과, Playwright로 6개 로봇 카드/리스트 렌더+뷰 전환 localStorage 지속+`/robots/[id]` 이동+등록 폼 정상 제출/유효성 에러+제출 중 버튼 disabled 확인, 콘솔 에러 0건.
 
-- **Task 008: 로봇 상세 UI (더미, MQTT 미연동)**
+- **Task 008: 로봇 상세 UI (더미, MQTT 미연동)** - 우선순위
   - 구현 담당: 프론트 전담 서브에이전트
   - [ ] `<HumanoidRobot />` 배치, 6부위 클릭 시 로그 패널에 더미 메시지 append + 반짝임
   - [ ] 연결 상태 인디케이터(더미 고정), EMQX 대시보드 링크
