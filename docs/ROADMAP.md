@@ -104,21 +104,25 @@
     - [x] 컨테이너 재시작 후 데이터 유지(명명 볼륨)
       > 변경 사항 요약: `apps/api/prisma/migrations/20260918064512_init/`에 User/Session/Robot/RobotEvent 4개 테이블 + FK/유니크 인덱스 마이그레이션, `PrismaService`(`OnModuleInit`→`$connect`/`OnModuleDestroy`→`$disconnect`)+`@Global` `PrismaModule` 구현 후 `app.module.ts` 등록, `main.ts`에 `enableShutdownHooks()` 추가. `pnpm --filter api build`(prisma generate 포함)·`pnpm --filter api exec jest src/prisma/prisma.service.spec.ts`·`pnpm --filter api exec prisma migrate status`("Database schema is up to date!", `nest-turbo-postgres-1` healthy) 재확인 완료.
 
-- **Task 010: `auth` 모듈 (4-layer DDD)** - 우선순위
+- **Task 010: `auth` 모듈 (4-layer DDD)** ✅ - 완료
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-010-auth.spec.html` + 단위 테스트 골격
-  - [ ] `domain/`: `User`(`verifyPassword`), `Session`(`isActive` / `revoke` / `rotate`), `Email`·`PasswordHash` VO, `UserRepository`·`SessionRepository` interface, `PasswordHasher`·`TokenService` port
-  - [ ] `application/`: `RegisterUserUseCase`(+ 로봇 3개 시드), `LoginUseCase`, `RefreshSessionUseCase`, `LogoutUseCase`, `GetMeUseCase`
-  - [ ] `infrastructure/`: `PrismaUserRepository`, `PrismaSessionRepository`, `BcryptPasswordHasher`, `JwtTokenService`
-  - [ ] `guards/JwtAuthGuard`(Passport JWT, 쿠키에서 access token 추출), `cookie-parser` 등록
-  - [ ] `main.ts` CORS → `app.enableCors({ origin: 'http://localhost:3001', credentials: true })`
-  - [ ] 로그인: access JWT(15m) + `Session` row(refresh sha256 해시, `expiresAt`, `userAgent`) + httpOnly·`SameSite=Lax` 쿠키 2개. refresh: 회전(기존 `revokedAt`, 새 row). logout: `revokedAt` + 쿠키 clear
+  - [x] `domain/`: `User`(`verifyPassword`), `Session`(`isActive` / `revoke` / `rotate`), `Email`·`PasswordHash` VO, `UserRepository`·`SessionRepository` interface, `PasswordHasher`·`TokenService` port
+  - [x] `application/`: `RegisterUserUseCase`(+ 로봇 3개 시드), `LoginUseCase`, `RefreshSessionUseCase`, `LogoutUseCase`, `GetMeUseCase`
+  - [x] `infrastructure/`: `PrismaUserRepository`, `PrismaSessionRepository`, `BcryptPasswordHasher`, `JwtTokenService`
+  - [x] `guards/JwtAuthGuard`(Passport JWT, 쿠키에서 access token 추출), `cookie-parser` 등록
+  - [x] `main.ts` CORS → `app.enableCors({ origin: 'http://localhost:3001', credentials: true })`
+  - [x] 로그인: access JWT(15m) + `Session` row(refresh sha256 해시, `expiresAt`, `userAgent`) + httpOnly·`SameSite=Lax` 쿠키 2개. refresh: 회전(기존 `revokedAt`, 새 row). logout: `revokedAt` + 쿠키 clear
   - 테스트 체크리스트:
-    - [ ] Jest 단위: `Session.rotate`/`isActive`, `LoginUseCase` 실패 경로(도메인 예외), bcrypt 해시·검증, `RefreshSessionUseCase` 만료·revoke 거부
-    - [ ] Playwright MCP e2e: `register → login → /auth/me → refresh → logout`
+    - [x] Jest 단위: `Session.rotate`/`isActive`, `LoginUseCase` 실패 경로(도메인 예외), bcrypt 해시·검증, `RefreshSessionUseCase` 만료·revoke 거부
+    - [x] Playwright MCP e2e: `register → login → /auth/me → refresh → logout`
+      > curl 쿠키 jar로 검증(Playwright 아님)
     - [ ] Playwright MCP e2e: access token 만료(15m) 후 401 → 자동 `/auth/refresh` → 재시도 무중단
+      > Task 013(프론트 fetch 래퍼)으로 이월
     - [ ] 수동: API 재시작 후 로그인 유지(PostgreSQL `Session` 생존), logout 후 `/dashboard` → `/login`
+      > Task 013(middleware)으로 이월. Session은 DB row라 생존 구조이나 재시작 실검증은 미수행
+    > 변경 사항 요약: `apps/api/src/auth/{domain,application,infrastructure,guards,dto}` 4-layer 구현(User/Session/Email·PasswordHash VO, Register·Login·RefreshSession·Logout·GetMe UseCase, Prisma repo·Bcrypt·JwtTokenService), Passport JWT(쿠키 추출) `JwtAuthGuard` + `cookie-parser` + CORS(`localhost:3001`, credentials), refresh 회전은 `SessionRepository.rotate`(`$transaction`), 가입 시 `RobotSeeder` 포트로 로봇 3개 시드, 로그아웃 멱등. `tsc --noEmit` 0 에러·jest 8 스위트 26 테스트·`nest build`·curl 플로우(register→login→me→refresh 회전→구 refresh 401→logout) 검증. 미체크 2건(access 만료 자동 refresh, 재시작 후 로그인 유지/`/dashboard`→`/login`)은 프론트 의존으로 Task 013 이월.
 
-- **Task 011: `robots` 모듈 (4-layer DDD)**
+- **Task 011: `robots` 모듈 (4-layer DDD)** - 우선순위
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-011-robots.spec.html` + 단위 테스트 골격
   - [ ] `domain/`: `Robot`(`applyCommand` → 어떤 status에서든 `active`), `RobotEvent`, `RobotPart`·`RobotStatus` VO, `RobotRepository`·`RobotEventRepository` interface, `RobotCommandPublisher` port
   - [ ] `application/`: `RegisterRobotUseCase`, `ListRobotsUseCase`, `GetRobotUseCase`(소유자 검증), `HandleRobotCommandUseCase`
@@ -144,6 +148,7 @@
   - [ ] `middleware.ts`: `access_token` 쿠키 확인 → 없으면 `/login`
   - [ ] 대시보드: 서버 컴포넌트 `GET /robots`(쿠키 forward), 등록 후 `router.refresh()`. 로드 시점 스냅샷(실시간 구독 없음)
   - [ ] 로봇 상세: 서버 컴포넌트 조회 → `notFound()`, 클라이언트 mqtt.js WS 연결(`NEXT_PUBLIC_MQTT_WS_URL`), 클릭 → `commandTopic` publish, `stateTopic` + `command/+` 구독 → 부위 반짝 + 로그 패널. `clientId`는 `localStorage` uuid. 연결 끊김 시 클릭 disabled
+  - > Task 010에서 이월: access token 만료 후 자동 refresh 무중단 e2e, API 재시작 후 로그인 유지 및 logout 후 `/dashboard` → `/login` 수동 검증
   - 완료 기준: 더미 제거, 실제 로그인 → 실제 목록 → 실제 MQTT 왕복
 
 - **Task 013-1: 통합 테스트**
