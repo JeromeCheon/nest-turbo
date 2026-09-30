@@ -4,7 +4,6 @@ import type {
   RobotStatePayload,
   RobotStatus,
 } from '@repo/api';
-import { ROBOT_STATUSES } from './robot-status.vo';
 
 export class Robot {
   private constructor(
@@ -58,7 +57,7 @@ export class Robot {
   }
 
   applyCommand(part: RobotPart, now: Date = new Date()): RobotStatePayload {
-    this.currentStatus = ROBOT_STATUSES[1];
+    this.currentStatus = 'active';
     return {
       part,
       status: this.currentStatus,
