@@ -49,7 +49,6 @@ export class HandleRobotCommandUseCase {
     }
 
     const state = robot.applyCommand(part);
-    await this.robotRepository.updateStatus(robot);
     await this.robotEventRepository.create(
       RobotEvent.record({
         robotId,
@@ -59,5 +58,9 @@ export class HandleRobotCommandUseCase {
       }),
     );
     await this.robotCommandPublisher.publishState(robotId, state);
+    // ponytail: 이벤트 기록·발행이 끝난 뒤에 상태를 커밋해, 둘 중 하나가 실패해도
+    // DB 상태가 먼저 앞서가지 않게 함. 완전한 원자성(트랜잭션/outbox)은 두 리포지토리
+    // 경계를 넘어야 해서 Task 012가 실제 호출부를 붙일 때 다시 검토.
+    await this.robotRepository.updateStatus(robot);
   }
 }
