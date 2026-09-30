@@ -40,7 +40,10 @@ export class HandleRobotCommandUseCase {
       return;
     }
 
-    if (ownerId !== undefined && !robot.isOwnedBy(ownerId)) {
+    if (
+      source === 'web' &&
+      (ownerId === undefined || !robot.isOwnedBy(ownerId))
+    ) {
       this.logger.warn(`소유자가 아닌 커맨드 무시: ${robotId}`);
       return;
     }
