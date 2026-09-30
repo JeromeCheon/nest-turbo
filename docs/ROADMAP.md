@@ -120,19 +120,21 @@
       > Task 013(프론트 fetch 래퍼)으로 이월
     - [ ] 수동: API 재시작 후 로그인 유지(PostgreSQL `Session` 생존), logout 후 `/dashboard` → `/login`
       > Task 013(middleware)으로 이월. Session은 DB row라 생존 구조이나 재시작 실검증은 미수행
-    > 변경 사항 요약: `apps/api/src/auth/{domain,application,infrastructure,guards,dto}` 4-layer 구현(User/Session/Email·PasswordHash VO, Register·Login·RefreshSession·Logout·GetMe UseCase, Prisma repo·Bcrypt·JwtTokenService), Passport JWT(쿠키 추출) `JwtAuthGuard` + `cookie-parser` + CORS(`localhost:3001`, credentials), refresh 회전은 `SessionRepository.rotate`(`$transaction`), 가입 시 `RobotSeeder` 포트로 로봇 3개 시드, 로그아웃 멱등. `tsc --noEmit` 0 에러·jest 8 스위트 26 테스트·`nest build`·curl 플로우(register→login→me→refresh 회전→구 refresh 401→logout) 검증. 미체크 2건(access 만료 자동 refresh, 재시작 후 로그인 유지/`/dashboard`→`/login`)은 프론트 의존으로 Task 013 이월.
+      > 변경 사항 요약: `apps/api/src/auth/{domain,application,infrastructure,guards,dto}` 4-layer 구현(User/Session/Email·PasswordHash VO, Register·Login·RefreshSession·Logout·GetMe UseCase, Prisma repo·Bcrypt·JwtTokenService), Passport JWT(쿠키 추출) `JwtAuthGuard` + `cookie-parser` + CORS(`localhost:3001`, credentials), refresh 회전은 `SessionRepository.rotate`(`$transaction`), 가입 시 `RobotSeeder` 포트로 로봇 3개 시드, 로그아웃 멱등. `tsc --noEmit` 0 에러·jest 8 스위트 26 테스트·`nest build`·curl 플로우(register→login→me→refresh 회전→구 refresh 401→logout) 검증. 미체크 2건(access 만료 자동 refresh, 재시작 후 로그인 유지/`/dashboard`→`/login`)은 프론트 의존으로 Task 013 이월.
 
-- **Task 011: `robots` 모듈 (4-layer DDD)** - 우선순위
+- **Task 011: `robots` 모듈 (4-layer DDD)** ✅ - 완료
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-011-robots.spec.html` + 단위 테스트 골격
-  - [ ] `domain/`: `Robot`(`applyCommand` → 어떤 status에서든 `active`), `RobotEvent`, `RobotPart`·`RobotStatus` VO, `RobotRepository`·`RobotEventRepository` interface, `RobotCommandPublisher` port
-  - [ ] `application/`: `RegisterRobotUseCase`, `ListRobotsUseCase`, `GetRobotUseCase`(소유자 검증), `HandleRobotCommandUseCase`
-  - [ ] `infrastructure/`: `PrismaRobotRepository`, `PrismaRobotEventRepository`
-  - [ ] `controller`: `GET /robots`(`JwtAuthGuard`), `GET /robots/:id`(소유자 불일치 404), `POST /robots`(`{ name, model }` → `idle`)
+  - [x] `domain/`: `Robot`(`applyCommand` → 어떤 status에서든 `active`), `RobotEvent`, `RobotPart`·`RobotStatus` VO, `RobotRepository`·`RobotEventRepository` interface, `RobotCommandPublisher` port
+  - [x] `application/`: `RegisterRobotUseCase`, `ListRobotsUseCase`, `GetRobotUseCase`(소유자 검증), `HandleRobotCommandUseCase`
+  - [x] `infrastructure/`: `PrismaRobotRepository`, `PrismaRobotEventRepository`
+  - [x] `controller`: `GET /robots`(`JwtAuthGuard`), `GET /robots/:id`(소유자 불일치 404), `POST /robots`(`{ name, model }` → `idle`)
   - 테스트 체크리스트:
-    - [ ] Jest 단위: `Robot.applyCommand` 상태 전이, `RobotPart` 6값 검증, `GetRobotUseCase` 소유자 불일치
-    - [ ] Playwright MCP e2e: 로그인 후 `GET /robots`, 남의 로봇 404, `POST /robots` 후 목록 반영
+    - [x] Jest 단위: `Robot.applyCommand` 상태 전이, `RobotPart` 6값 검증, `GetRobotUseCase` 소유자 불일치
+    - [x] Playwright MCP e2e 대체(curl 쿠키 jar, Task 010 방식과 동일): 로그인 후 `GET /robots`(seed 3개 반영), `GET /robots/:id` 소유자 200 / 남의 로봇 404 / 존재하지 않는 id 404 — 전부 실제 서버 기동 후 확인
+    - [x] `POST /robots` 후 목록 반영 — 버그 수정 확인 후 실제 서버 기동 재현으로 통과
+  - > 변경 사항 요약: `prisma-robot.repository.ts`의 `create()`가 엔티티를 그대로 spread하던 것을 `ownerId/name/model/status` 명시 매핑으로 수정(`id` 필드 제외로 `@default(cuid())` 정상 동작, `status` 컬럼명 불일치 해소). 실제 서버 기동(`pnpm --filter api start`, postgres 컨테이너) 후 회원가입→로그인→`POST /robots` 연속 2회 모두 201/cuid 정상 생성, `GET /robots`에 반영, 남의 로봇/존재하지 않는 id `404 ROBOT_NOT_FOUND_ERROR` 확인. `pnpm --filter api build` exit 0, `test` 51/51 통과, `lint` 0 에러.
 
-- **Task 012: MQTT 어댑터 (구독 + state publish)**
+- **Task 012: MQTT 어댑터 (구독 + state publish)** - 우선순위
   - 구현 담당: 인간 개발자 · AI 산출물: `docs/specs/task-012-mqtt.spec.html` + 단위 테스트 골격
   - [ ] `mqtt/mqtt.module.ts`: `mqtt.connect(MQTT_URL)` 클라이언트 provider, 전역 export
   - [ ] `robots/infrastructure/MqttRobotCommandListener`: `OnModuleInit`에서 `robot/+/command/+` 구독, `'connect'` 이벤트마다 재구독. 토픽 파싱 → `HandleRobotCommandUseCase(robotId, part, payload, source:'web')`
