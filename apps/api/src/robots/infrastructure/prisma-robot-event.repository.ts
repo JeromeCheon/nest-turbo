@@ -12,7 +12,9 @@ export class PrismaRobotEventRepository implements RobotEventRepository {
   async create(event: RobotEvent): Promise<RobotEvent> {
     const row = await this.prismaService.robotEvent.create({
       data: {
-        ...event,
+        robotId: event.robotId,
+        part: event.part,
+        source: event.source,
         payload: JSON.stringify(event.payload),
       },
     });
