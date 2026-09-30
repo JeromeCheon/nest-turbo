@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { RobotEvent } from '../domain/robot-event.entity';
+import { toRobotEventSource } from '../domain/robot-event-source.vo';
 import { RobotEventRepository } from '../domain/robot-event.repository';
 import { toRobotPart } from '../domain/robot-part.vo';
 
@@ -22,7 +23,7 @@ export class PrismaRobotEventRepository implements RobotEventRepository {
       ...row,
       payload: JSON.parse(row.payload),
       part: toRobotPart(row.part),
-      source: row.source === 'system' ? row.source : 'web',
+      source: toRobotEventSource(row.source),
     });
   }
 }

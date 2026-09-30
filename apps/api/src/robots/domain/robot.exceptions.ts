@@ -17,3 +17,9 @@ export class InvalidRobotStatusError extends DomainException {
     super(`유효하지 않은 로봇 상태값입니다: ${raw}`, 500);
   }
 }
+
+export class InvalidRobotEventSourceError extends DomainException {
+  constructor(raw: string) {
+    super(`유효하지 않은 로봇 이벤트 source입니다: ${raw}`, 500);
+  }
+}
