@@ -48,7 +48,11 @@ export class RobotEvent {
 
   toDto(): RobotEventDto {
     return {
-      ...this,
+      id: this.id,
+      robotId: this.robotId,
+      part: this.part,
+      source: this.source,
+      payload: this.payload,
       createdAt: this.createdAt.toISOString(),
     };
   }
