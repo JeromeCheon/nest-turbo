@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
-import type { Robot as RobotRow } from '@prisma/client';
+import { Prisma, type Robot as RobotRow } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Robot } from '../domain/robot.entity';
+import { RobotNotFoundError } from '../domain/robot.exceptions';
 import { RobotRepository } from '../domain/robot.repository';
 import { toRobotStatus } from '../domain/robot-status.vo';
+
+const MAX_ROBOTS_PER_OWNER = 200;
 
 @Injectable()
 export class PrismaRobotRepository implements RobotRepository {
@@ -28,6 +31,7 @@ export class PrismaRobotRepository implements RobotRepository {
       orderBy: {
         createdAt: 'asc',
       },
+      take: MAX_ROBOTS_PER_OWNER,
     });
     return rows.map((row) => this.toDomain(row));
   }
@@ -45,14 +49,24 @@ export class PrismaRobotRepository implements RobotRepository {
   }
 
   async updateStatus(robot: Robot): Promise<void> {
-    await this.prismaService.robot.update({
-      data: {
-        status: robot.status,
-      },
-      where: {
-        id: robot.id,
-      },
-    });
+    try {
+      await this.prismaService.robot.update({
+        data: {
+          status: robot.status,
+        },
+        where: {
+          id: robot.id,
+        },
+      });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2025'
+      ) {
+        throw new RobotNotFoundError();
+      }
+      throw e;
+    }
   }
 
   private toDomain(row: RobotRow): Robot {
